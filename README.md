@@ -63,20 +63,6 @@ Aplicado aos 1.599 vinhos e comparado com as notas dos provadores, que o sistema
 
 A precisão do Premium é baixa porque vinhos com nota 5 e 6 são muito parecidos nessas três medições. O painel gerencial da página serve justamente para explorar esse trade-off entre volume e precisão.
 
-## Estrutura do repositório
-
-```
-.
-├── logica-fuzzy-revisa.html   # página interativa (autossuficiente, com os dados embutidos)
-├── fuzzy_vinho_revisa.ipynb   # notebook com a implementação em scikit-fuzzy, gráficos e métricas
-├── fuzzy_vinho.py             # mesmo sistema em NumPy puro, usado para gerar os dados da página
-├── requirements.txt
-└── data/
-    └── winequality-red.csv    # conjunto de dados da UCI
-```
-
-O motor de inferência da página foi reescrito em JavaScript e reproduz os resultados do `scikit-fuzzy` com até 4 casas decimais.
-
 ## Como executar
 
 ### Página
@@ -104,13 +90,6 @@ Se o arquivo `data/winequality-red.csv` não estiver presente, o notebook baixa 
 - Python, NumPy, pandas, SciPy, scikit-learn, Matplotlib
 - [scikit-fuzzy](https://github.com/scikit-fuzzy/scikit-fuzzy)
 - HTML, CSS e JavaScript puro (gráficos em SVG e Canvas, sem bibliotecas)
-
-## Integrantes
-
-- Nome do Integrante 1
-- Nome do Integrante 2
-- Nome do Integrante 3
-- Nome do Integrante 4
 
 ## Referências
 
