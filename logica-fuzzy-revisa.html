@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lógica Fuzzy na prática</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: coluna de leitura do tema ClassicMag (REVISA, WordPress) que se alarga para as figuras interativas. Tema único, claro, como o site. */
+:root{
+  color-scheme: light;
+  --paper:#ffffff; --surface:#ffffff; --ink:#0f0f0f; --ink-2:#6b6b6b; --muted:#8a8a8a; --title:#404040;
+  --rule:#e2e2e2; --accent:#6b1c1c; --accent-hover:#4a1414; --accent-soft:#f8eeee; --header-1:#4a1515; --header-2:#6a1d1d; --code-bg:#eeeeee;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --seq-0:#eef4fc; --seq-1:#104281;
+  --premium:#2a78d6; --padrao:#9b98a3; --revisar:#eb6834;
+  --font-display:"Noto Serif", Georgia, serif;
+  --font-body:"Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-ui:"Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:"Roboto Mono", monaco, consolas, "DejaVu Sans Mono", monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink-2);font-family:var(--font-body);font-size:16px;line-height:1.5}
+a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover,a:focus{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+.topbar{position:relative;z-index:5;background:linear-gradient(180deg,var(--header-1),var(--header-2) 55%,var(--header-1));}
+.topbar-in{max-width:1240px;margin:0 auto;padding:58px 40px;display:flex;align-items:center;gap:24px;font-family:var(--font-ui);font-size:15px;flex-wrap:wrap}
+.brand{font-family:var(--font-display);font-weight:700;font-size:48px;line-height:1;color:#fff;text-decoration:none}
+.brand span{color:inherit}
+.topbar nav{display:flex;gap:26px;flex-wrap:wrap;margin-left:auto}
+.topbar nav a{color:#fff;text-decoration:none;font-weight:700}
+.topbar nav a.dd::after{content:"";display:inline-block;width:6px;height:6px;border-right:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(45deg);margin:0 0 4px 9px}
+.topbar nav a:hover{color:#ffd9d9}
+.brand:hover{color:#fff}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--header-2);width:0;transition:width .1s linear;z-index:30}
+
+main{padding:0 40px 80px}
+.col{max-width:1120px;margin:0 auto}
+.wide{max-width:1120px;margin:0 auto}
+
+header.article{padding:96px 0 8px}
+.kicker{font-family:var(--font-ui);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 14px}
+h1{font-family:var(--font-display);font-weight:600;color:var(--title);font-size:clamp(34px,5vw,52px);line-height:1.15;margin:0 0 22px;text-wrap:balance}
+.dek{font-size:19px;color:var(--ink-2);margin:0 0 26px;line-height:1.45}
+.byline{display:flex;align-items:center;gap:14px;font-family:var(--font-ui);font-size:14px;color:var(--ink-2);padding:16px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:17px;flex:none}
+.byline strong{color:var(--ink);font-weight:600;display:block}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.members{font-family:var(--font-ui);font-size:15px;margin:0;padding:14px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.tag{background:var(--code-bg);border-radius:4px;padding:3px 11px;font-size:13px;color:var(--ink-2)}
+
+h2{font-family:var(--font-ui);font-weight:500;color:var(--ink);font-size:26px;line-height:1.25;margin:64px 0 14px;text-wrap:balance}
+h2 .num{font-family:var(--font-ui);font-size:13px;font-weight:500;color:var(--muted);display:block;letter-spacing:.08em;margin-bottom:8px}
+h3{font-family:var(--font-ui);font-weight:500;color:var(--ink);font-size:20px;margin:36px 0 10px}
+p{margin:0 0 20px}
+.lead-off::first-letter{font-family:var(--font-display);float:left;font-size:68px;line-height:.85;padding:8px 10px 0 0;color:var(--ink);font-weight:700}
+ul,ol{margin:0 0 22px;padding-left:88px}
+li{margin-bottom:2px}
+em{font-style:italic}
+strong{font-weight:700;color:var(--ink-2)}
+.toc{font-family:var(--font-ui);font-size:15px;margin:22px 0 0;display:flex;flex-wrap:wrap;gap:6px 18px}
+.toc span{color:var(--muted)}
+.toc a{color:var(--ink-2)}
+blockquote{margin:30px 0;padding:0 0 0 22px;border-left:3px solid var(--accent);font-style:italic;color:var(--ink-2);font-size:22px}
+code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+.math{font-family:var(--font-display);font-size:21px;color:var(--ink);text-align:center;margin:24px 0;padding:18px;background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);overflow-x:auto}
+.math i{font-style:italic}
+
+figure{margin:36px 0 40px}
+figure.col,figure.wide{margin:36px auto 44px}
+figure.col{max-width:820px}
+.mu-row{display:flex;flex-wrap:wrap;gap:4px 12px;font-family:var(--font-ui);font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.mu-row span{display:inline-flex;align-items:center;gap:5px}
+.mu-row i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.mu-row b{color:var(--ink);font-weight:600}
+figcaption{font-family:var(--font-ui);font-size:14px;color:var(--muted);line-height:1.5;margin-top:12px}
+figcaption b{color:var(--ink-2);font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--rule);padding:22px}
+.panel-title{font-family:var(--font-ui);font-weight:600;font-size:15px;margin:0 0 2px;color:var(--ink)}
+.panel-sub{font-family:var(--font-ui);font-size:13px;color:var(--muted);margin:0 0 14px}
+
+svg text{font-family:var(--font-ui);fill:var(--ink-2)}
+svg .axis line,svg .axis path{stroke:var(--rule)}
+svg .tick{font-size:11px;fill:var(--muted)}
+svg .grid{stroke:var(--rule);stroke-width:1}
+
+/* controles */
+.ctrl{font-family:var(--font-ui);font-size:14px;color:var(--ink-2)}
+.ctrl label{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}
+.ctrl output{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;margin:0}
+.btn{font-family:var(--font-ui);font-size:14px;font-weight:700;border:1px solid var(--ink);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:0;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.btn:hover,.btn:focus-visible{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:var(--paper)}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* laboratório */
+.lab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.lab-grid .mf{min-width:0}
+.lab-lower{display:grid;grid-template-columns:1.05fr 1fr;gap:22px;margin-top:22px}
+.rules{font-family:var(--font-ui);font-size:13px;display:grid;gap:5px}
+.rule{display:grid;grid-template-columns:1fr 92px 34px;gap:10px;align-items:center;padding:3px 6px;border-radius:6px}
+.rule.on{background:var(--code-bg)}
+.rule .txt{color:var(--ink-2);line-height:1.35}
+.rule .txt b{color:var(--ink);font-weight:600}
+.bar{height:8px;background:var(--code-bg);border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.bar i{display:block;height:100%;border-radius:0 4px 4px 0;width:0}
+.rule .val{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.stage-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:16px 0 18px;font-family:var(--font-ui);font-size:13px}
+.stage{padding:8px 10px;border:1px solid var(--rule);color:var(--muted);background:var(--paper)}
+.stage b{display:block;color:var(--ink-2);font-weight:600}
+.stage.active{border-color:var(--accent);background:var(--accent-soft);color:var(--ink-2)}
+.stage.active b{color:var(--accent)}
+.verdict{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;font-family:var(--font-ui);margin-top:8px}
+.big{font-family:var(--font-display);font-size:44px;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);color:var(--ink)}
+.chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-family:var(--font-ui);font-size:13px;color:var(--ink-2);margin:6px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:3px;border-radius:2px;background:var(--c)}
+.legend i.dot{width:9px;height:9px;border-radius:50%}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:24px 0}
+.pros-cons .panel h3{margin-top:0}
+.pros-cons ul{padding-left:20px;font-size:16px}
+.pros-cons li{margin-bottom:8px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}
+.stat{border-top:2px solid var(--ink);padding-top:10px;font-family:var(--font-ui)}
+.stat .v{font-family:var(--font-display);font-size:38px;font-weight:700;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .l{font-size:14px;color:var(--ink-2);line-height:1.4}
+
+/* código */
+.code{position:relative;margin:24px 0 30px;background:var(--code-bg);border:1px solid var(--rule)}
+.code pre code{padding:0;background:none;font-size:inherit;border-radius:0}
+.code pre{margin:0;padding:18px 20px;overflow-x:auto;font-family:var(--font-mono);font-size:14.5px;line-height:1.6;color:var(--ink)}
+.code .fname{font-family:var(--font-ui);font-size:12.5px;color:var(--muted);padding:9px 20px 0}
+.code .copy{position:absolute;top:8px;right:8px;font-size:12px;padding:4px 10px}
+.tok-k{color:#b00020;font-weight:500}
+.tok-s{color:var(--s3)}
+.tok-c{color:var(--muted);font-style:italic}
+.tok-n{color:var(--s1)}
+
+/* SAD */
+.levels{display:grid;gap:14px;margin:26px 0}
+.level{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--rule)}
+.level h4{font-family:var(--font-ui);font-size:15px;margin:0;color:var(--accent);font-weight:600}
+.level h4 small{display:block;color:var(--muted);font-weight:400;font-size:13px;margin-top:2px}
+.level p{margin:0;font-size:16px}
+.mgr{display:grid;grid-template-columns:260px 1fr;gap:26px}
+table.cm{border-collapse:separate;border-spacing:3px;font-family:var(--font-ui);font-size:14px;width:100%;font-variant-numeric:tabular-nums}
+table.cm th{font-weight:500;color:var(--muted);font-size:12.5px;padding:4px 6px;text-align:center}
+table.cm th.row{text-align:right;color:var(--ink-2)}
+table.cm td{text-align:center;padding:12px 6px;color:var(--ink);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.kpi{background:#f7f7f7;border:1px solid var(--rule);padding:10px 12px;font-family:var(--font-ui)}
+.kpi .v{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12.5px;color:var(--muted);line-height:1.35}
+
+.tooltip{position:fixed;pointer-events:none;background:#242424;color:#fff;font-family:var(--font-ui);font-size:12.5px;line-height:1.45;padding:7px 10px;border-radius:6px;opacity:0;transition:opacity .1s;z-index:20;max-width:240px}
+.refs{font-size:16px;color:var(--ink-2)}
+.refs li{margin-bottom:10px}
+footer{border-top:1px solid var(--rule);margin-top:70px;padding:28px 0;font-family:var(--font-ui);font-size:14px;color:var(--muted)}
+
+@media (max-width:860px){
+  .lab-grid{grid-template-columns:1fr}
+  .lab-lower,.two,.pros-cons,.mgr{grid-template-columns:1fr}
+  .level{grid-template-columns:1fr;gap:6px}
+  .stage-strip{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){.topbar-in{padding:28px 20px}.brand{font-size:36px}.topbar nav{margin-left:0;gap:14px}main{padding:0 20px 60px}ul,ol{padding-left:26px}}
+@media (max-width:520px){
+  body{font-size:17px}
+  .stats{grid-template-columns:1fr}
+  .tags{margin-left:0}
+  .byline{flex-wrap:wrap}
+  .panel{padding:16px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="https://wordpress.ft.unicamp.br/revisa/">REVISA</a>
+    <nav aria-label="Menu do REVISA">
+      <a href="https://wordpress.ft.unicamp.br/revisa/">Início</a><a class="dd" href="https://wordpress.ft.unicamp.br/revisa/">Tomada de decisão</a><a class="dd" href="https://wordpress.ft.unicamp.br/revisa/">Exploração de Dados</a><a class="dd" href="https://wordpress.ft.unicamp.br/revisa/">Análise Preditiva</a><a href="https://wordpress.ft.unicamp.br/revisa/">Algoritmos Genéticos</a>
+    </nav>
+  </div>
+  <div class="progress" id="progress"></div>
+</div>
+
+<main id="topo">
+<header class="article col">
+  <p class="kicker">Sistemas de Apoio à Decisão · Tutorial + estudo de caso</p>
+  <h1>Lógica Fuzzy: decidindo com o "mais ou menos"</h1>
+  <p class="dek">Como transformar regras de especialista, escritas em linguagem natural, num sistema que classifica 1.599 lotes reais de vinho e ajuda o gestor a decidir o que vira rótulo Premium.</p>
+  <p class="members"><strong>Integrantes:</strong> Gabriel Aleksandro de Paula [198327], Pedro Yang Kim [284031], Nome do Integrante 3, Nome do Integrante 4</p>
+  <nav class="toc" aria-label="Neste artigo"><span>Neste artigo:</span><a href="#teoria">Teoria</a><a href="#caso">Estudo de caso</a><a href="#python">Python</a><a href="#limites">Vantagens e limites</a><a href="#sad">Uso em SAD</a></nav>
+</header>
+
+<article>
+<div class="col">
+<p class="lead" style="margin-top:34px">Pergunte a um enólogo se um vinho com 11,4 % de álcool é "alcoólico" e ele provavelmente vai responder: <em>mais ou menos</em>. Pergunte a um computador com uma regra do tipo <code>alcool &gt;= 11.5</code> e a resposta será um "não" seco. Um décimo de grau acima e vira "sim". Essa fronteira rígida é confortável para o código, mas é estranha para quem decide. A lógica fuzzy existe para preencher esse espaço entre o sim e o não.</p>
+<p>Neste artigo vamos construir, do zero, um sistema de inferência fuzzy que apoia uma decisão real de uma vinícola: <strong>para onde mandar cada lote produzido</strong>. Usaremos dados públicos de 1.599 vinhos tintos portugueses avaliados por provadores, implementaremos tudo em Python e, no fim, discutiremos como o resultado vira informação para decisões operacionais, gerenciais e estratégicas.</p>
+</div>
+
+<!-- Figura 1: nítido x fuzzy -->
+<figure class="col">
+  <div class="panel">
+    <p class="panel-title">O que significa "teor alcoólico alto"?</p>
+    <p class="panel-sub">Arraste o controle ou aperte "Animar". A linha laranja é a regra nítida; a azul é o conjunto fuzzy.</p>
+    <svg id="fig-crisp" viewBox="0 0 640 230" role="img" aria-label="Comparação entre conjunto nítido e conjunto fuzzy para teor alcoólico alto"></svg>
+    <div class="two" style="align-items:end;margin-top:6px">
+      <div class="ctrl"><label for="crisp-x">Teor alcoólico <output id="crisp-x-out">11,4 %</output></label><input id="crisp-x" type="range" min="8.5" max="14.5" step="0.05" value="11.4"></div>
+      <div class="btn-row"><button class="btn" id="crisp-play" type="button">Animar</button><span class="ctrl" id="crisp-read" style="font-variant-numeric:tabular-nums"></span></div>
+    </div>
+  </div>
+  <figcaption><b>Figura 1.</b> No conjunto nítido a pertinência salta de 0 para 1 em 11,5 %. No conjunto fuzzy ela cresce gradualmente entre 10,6 % e 11,8 %, então 11,4 % já é "alto" com grau 0,67.</figcaption>
+</figure>
+
+<div class="col">
+<h2 id="teoria"><span class="num">01 · FUNDAMENTAÇÃO TEÓRICA</span>Conjuntos com fronteiras graduais</h2>
+<p>A lógica fuzzy foi proposta por Lotfi Zadeh em 1965. Na teoria clássica, um elemento <i>x</i> pertence ou não a um conjunto <i>A</i>. Na teoria fuzzy, ele pertence com um <strong>grau</strong> entre 0 e 1, dado por uma <strong>função de pertinência</strong> μ<sub>A</sub>(<i>x</i>).</p>
+<div class="math">μ<sub>A</sub> : X → [0, 1] &nbsp;&nbsp;&nbsp; μ<sub>alto</sub>(11,4 %) = 0,67</div>
+<p>Isso não é probabilidade. Dizer que o vinho é "alto" com grau 0,67 não significa 67 % de chance de ele ser alto; significa que ele <em>é</em> parcialmente alto. A incerteza aqui está na fronteira do conceito, não no acontecimento.</p>
+
+<h3>Variáveis linguísticas</h3>
+<p>Uma variável linguística é uma grandeza numérica descrita por palavras. "Acidez volátil" vira {<em>baixa</em>, <em>média</em>, <em>alta</em>}, cada palavra com sua função de pertinência. As formas mais usadas são triângulos e trapézios, porque são fáceis de explicar e de calibrar. Os termos se sobrepõem de propósito: é nessa sobreposição que mora a suavidade do sistema.</p>
+
+<h3>Operadores</h3>
+<p>Os conectivos da lógica clássica ganham versões contínuas. No sistema de Mamdani, o mais usado em SAD, adotamos:</p>
+<ul>
+  <li><strong>E (interseção):</strong> μ<sub>A∧B</sub> = mín(μ<sub>A</sub>, μ<sub>B</sub>)</li>
+  <li><strong>OU (união):</strong> μ<sub>A∨B</sub> = máx(μ<sub>A</sub>, μ<sub>B</sub>)</li>
+  <li><strong>NÃO (complemento):</strong> μ<sub>¬A</sub> = 1 − μ<sub>A</sub></li>
+</ul>
+
+<h3>Como o algoritmo funciona</h3>
+<p>Um sistema de inferência fuzzy do tipo Mamdani (Mamdani e Assilian, 1975) executa sempre as mesmas quatro etapas:</p>
+</div>
+
+<figure class="wide">
+  <svg id="fig-pipe" viewBox="0 0 1000 200" role="img" aria-label="Fluxo do sistema fuzzy: fuzzificação, avaliação de regras, agregação e defuzzificação"></svg>
+  <figcaption class="col"><b>Figura 2.</b> Pipeline de um sistema Mamdani. Entradas numéricas viram graus de pertinência, as regras são disparadas com força proporcional a esses graus, as saídas são combinadas numa única área e o centroide dessa área devolve um número.</figcaption>
+</figure>
+
+<div class="col">
+<ol>
+  <li><strong>Fuzzificação.</strong> Cada entrada numérica é convertida em graus de pertinência para cada termo linguístico.</li>
+  <li><strong>Avaliação das regras.</strong> Cada regra <em>SE … ENTÃO …</em> tem força igual ao mínimo dos graus dos seus antecedentes. O conjunto de saída da regra é "cortado" nessa altura (implicação de Mamdani).</li>
+  <li><strong>Agregação.</strong> As saídas de todas as regras são unidas pelo máximo, formando uma única área.</li>
+  <li><strong>Defuzzificação.</strong> A área é convertida num número. O método mais comum é o centroide:</li>
+</ol>
+<div class="math"><i>y</i>* = ∫ <i>y</i> · μ(<i>y</i>) d<i>y</i> &nbsp;/&nbsp; ∫ μ(<i>y</i>) d<i>y</i></div>
+<p>Existe também o modelo de Takagi-Sugeno, em que cada regra produz diretamente uma função das entradas e a saída é uma média ponderada. Ele é mais eficiente computacionalmente, mas menos interpretável. Neste tutorial usamos Mamdani porque, em apoio à decisão, poder mostrar ao gestor <em>por que</em> o sistema chegou a um número é tão importante quanto o número.</p>
+
+<h2 id="caso"><span class="num">02 · EXEMPLO PRÁTICO</span>A vinícola que precisa decidir o destino de cada lote</h2>
+<p>Imagine uma vinícola que produz centenas de lotes de vinho tinto por safra. Cada lote passa por análises físico-químicas de rotina. Os provadores especialistas, porém, são caros e lentos: avaliam por amostragem. A gestão precisa decidir rapidamente, para cada lote, entre três destinos:</p>
+<ul>
+  <li><strong>Premium:</strong> engarrafar com rótulo de reserva, preço maior;</li>
+  <li><strong>Padrão:</strong> linha comercial regular;</li>
+  <li><strong>Revisar:</strong> encaminhar para prova sensorial antes de liberar, com possível corte ou descarte.</li>
+</ul>
+<p>Os dados vêm do conjunto <a href="https://archive.ics.uci.edu/dataset/186/wine+quality">Wine Quality</a> do Repositório UCI (Cortez et al., 2009): 1.599 vinhos tintos da região do Vinho Verde, cada um com 11 medições de laboratório e a mediana das notas de pelo menos três provadores, numa escala de 0 a 10. Na prática, as notas vão de 3 a 8, e 83 % dos vinhos receberam 5 ou 6.</p>
+<p>Um sistema fuzzy bom tem poucas variáveis e regras que um especialista reconhece. Para escolher as entradas, medimos a correlação de Spearman entre cada análise e a nota:</p>
+</div>
+
+<figure class="col">
+  <div class="panel">
+    <p class="panel-title">Correlação de Spearman entre cada análise e a nota dos provadores</p>
+    <p class="panel-sub">1.599 vinhos tintos · em destaque, as três variáveis escolhidas</p>
+    <svg id="fig-corr" viewBox="0 0 640 330" role="img" aria-label="Gráfico de barras com a correlação de cada variável com a qualidade"></svg>
+  </div>
+  <figcaption><b>Figura 3.</b> Álcool (+0,48), acidez volátil (−0,38) e sulfatos (+0,38) são as três medições mais associadas à nota. A acidez volátil, que dá ao vinho o cheiro de vinagre, puxa a qualidade para baixo.</figcaption>
+</figure>
+
+<div class="col">
+<p>As três variáveis escolhidas também fazem sentido enológico: álcool está associado a corpo e maturação da uva, acidez volátil alta é um defeito clássico e os sulfatos ajudam na conservação. Com elas definimos os termos linguísticos e a base de <strong>11 regras</strong>, escritas como um enólogo as diria:</p>
+<ul>
+  <li>SE álcool é <b>alto</b> E acidez é <b>baixa</b> ENTÃO qualidade é <b>excelente</b></li>
+  <li>SE álcool é <b>médio</b> E acidez é <b>média</b> ENTÃO qualidade é <b>regular</b></li>
+  <li>SE acidez é <b>alta</b> ENTÃO qualidade é <b>ruim</b></li>
+  <li>… e outras oito, listadas no laboratório abaixo.</li>
+</ul>
+<p>Repare que nenhuma regra foi aprendida dos dados. Os dados servem apenas para <em>verificar</em> se o raciocínio do especialista se sustenta. Teste você mesmo: mova os controles, escolha um vinho real e aperte <strong>Animar inferência</strong> para ver as quatro etapas acontecendo.</p>
+</div>
+
+<!-- LABORATÓRIO -->
+<figure class="wide" id="lab">
+  <div class="panel">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between">
+      <div><p class="panel-title">Laboratório: o sistema fuzzy por dentro</p>
+      <p class="panel-sub">Entradas de um lote → graus de pertinência → regras → área agregada → índice e decisão</p></div>
+      <div class="btn-row">
+        <span class="ctrl">Vinho real:</span>
+        <button class="btn" type="button" data-preset="0">nota 3</button>
+        <button class="btn" type="button" data-preset="1">nota 5</button>
+        <button class="btn" type="button" data-preset="2">nota 6</button>
+        <button class="btn" type="button" data-preset="3">nota 8</button>
+        <button class="btn primary" type="button" id="animate">Animar inferência</button>
+      </div>
+    </div>
+    <div class="stage-strip" aria-live="polite">
+      <div class="stage" data-stage="0"><b>1 · Fuzzificação</b>números → graus</div>
+      <div class="stage" data-stage="1"><b>2 · Regras</b>força = mín(graus)</div>
+      <div class="stage" data-stage="2"><b>3 · Agregação</b>máx das saídas cortadas</div>
+      <div class="stage" data-stage="3"><b>4 · Defuzzificação</b>centroide da área</div>
+    </div>
+    <div class="lab-grid">
+      <div class="mf"><div class="ctrl"><label for="in-alcool">Teor alcoólico (% vol) <output id="out-alcool"></output></label><input id="in-alcool" type="range" min="8.4" max="14.9" step="0.05"></div><svg id="mf-alcool" viewBox="0 0 320 150" role="img" aria-label="Funções de pertinência do álcool"></svg><div class="mu-row" id="mu-alcool"></div></div>
+      <div class="mf"><div class="ctrl"><label for="in-acidez">Acidez volátil (g/L) <output id="out-acidez"></output></label><input id="in-acidez" type="range" min="0.12" max="1.58" step="0.01"></div><svg id="mf-acidez" viewBox="0 0 320 150" role="img" aria-label="Funções de pertinência da acidez volátil"></svg><div class="mu-row" id="mu-acidez"></div></div>
+      <div class="mf"><div class="ctrl"><label for="in-sulfatos">Sulfatos (g/L) <output id="out-sulfatos"></output></label><input id="in-sulfatos" type="range" min="0.33" max="2.0" step="0.01"></div><svg id="mf-sulfatos" viewBox="0 0 320 150" role="img" aria-label="Funções de pertinência dos sulfatos"></svg><div class="mu-row" id="mu-sulfatos"></div></div>
+    </div>
+    <div class="lab-lower">
+      <div>
+        <p class="panel-title" style="margin-bottom:8px">Base de regras e força de disparo</p>
+        <div class="rules" id="rules"></div>
+      </div>
+      <div>
+        <p class="panel-title">Saída agregada: índice de qualidade</p>
+        <div class="legend" id="out-legend"></div>
+        <svg id="mf-out" viewBox="0 0 440 210" role="img" aria-label="Conjunto de saída agregado e centroide"></svg>
+        <div class="verdict"><span class="big" id="idx">–</span><span class="ctrl">índice (0–10)</span><span class="chip" id="decision">–</span><span class="ctrl" id="real-note"></span></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="col"><b>Figura 4.</b> Laboratório interativo. Os botões carregam vinhos reais do conjunto UCI com a nota mediana de cada faixa. A decisão usa os limiares padrão do painel gerencial da seção 05.</figcaption>
+</figure>
+
+<div class="col">
+<h3>O sistema funciona nos 1.599 lotes?</h3>
+<p>Aplicamos o sistema a todos os vinhos e comparamos o índice fuzzy com a nota dos provadores. Lembre que o sistema nunca viu essas notas: ele só conhece três medições e onze regras.</p>
+<div class="stats">
+  <div class="stat"><div class="v" id="st-rho">0,55</div><div class="l">correlação de Spearman entre índice fuzzy e nota (só o álcool chega a 0,48)</div></div>
+  <div class="stat"><div class="v" id="st-auc">0,85</div><div class="l">AUC para separar vinhos nota ≥ 7 do restante</div></div>
+  <div class="stat"><div class="v">0 / 11</div><div class="l">parâmetros ajustados por treino: tudo veio de regras explícitas</div></div>
+</div>
+</div>
+
+<figure class="wide">
+  <div class="panel">
+    <p class="panel-title">Índice fuzzy de cada lote, agrupado pela nota real dos provadores</p>
+    <p class="panel-sub">Cada ponto é um vinho · traço preto = mediana do grupo · linhas tracejadas = limiares de decisão · passe o mouse sobre os pontos</p>
+    <div class="legend"><span><i class="dot" style="--c:var(--premium)"></i>Premium</span><span><i class="dot" style="--c:var(--padrao)"></i>Padrão</span><span><i class="dot" style="--c:var(--revisar)"></i>Revisar</span></div>
+    <svg id="fig-strip" viewBox="0 0 960 360" role="img" aria-label="Gráfico de pontos do índice fuzzy por nota"></svg>
+  </div>
+  <figcaption class="col"><b>Figura 5.</b> As medianas sobem de forma consistente com a nota. A sobreposição entre 5 e 6 é esperada: com apenas três medições, nenhum método separa bem vinhos tão parecidos.</figcaption>
+</figure>
+
+<div class="col">
+<h3>Por que não usar simplesmente regras SE/ENTÃO comuns?</h3>
+<p>Uma regra nítida equivalente seria "Premium se álcool ≥ 11,5 e acidez &lt; 0,5; Revisar se acidez ≥ 0,8". O mapa abaixo mostra a resposta dos dois sistemas para todas as combinações de álcool e acidez, com sulfatos fixos.</p>
+</div>
+
+<figure class="wide">
+  <div class="panel">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:end">
+      <div><p class="panel-title">Superfície de decisão: fuzzy x regra nítida</p>
+      <p class="panel-sub">Cor = índice de qualidade (claro = baixo, escuro = alto) · passe o mouse para ler o valor</p></div>
+      <div class="ctrl" style="min-width:240px"><label for="surf-sul">Sulfatos fixos em <output id="surf-sul-out">0,65 g/L</output></label><input id="surf-sul" type="range" min="0.4" max="1.2" step="0.01" value="0.65"></div>
+    </div>
+    <div class="two">
+      <div><p class="ctrl" style="margin:6px 0"><b>Sistema fuzzy</b>: transição contínua</p><canvas id="surf-fuzzy" width="440" height="330" style="width:100%;height:auto;display:block" aria-label="Superfície fuzzy"></canvas></div>
+      <div><p class="ctrl" style="margin:6px 0"><b>Regra nítida</b>: degraus</p><canvas id="surf-crisp" width="440" height="330" style="width:100%;height:auto;display:block" aria-label="Superfície nítida"></canvas></div>
+    </div>
+    <div class="legend" style="margin-top:10px"><span>índice</span><span id="seq-legend"></span></div>
+  </div>
+  <figcaption class="col"><b>Figura 6.</b> Na regra nítida, um lote com 11,45 % de álcool e outro com 11,55 % recebem decisões opostas. No fuzzy, a nota cresce aos poucos e o gestor vê o quão perto da fronteira cada lote está.</figcaption>
+</figure>
+
+<div class="col">
+<h2 id="python"><span class="num">03 · IMPLEMENTAÇÃO</span>Construindo o sistema em Python</h2>
+<p>Usamos a biblioteca <a href="https://pythonhosted.org/scikit-fuzzy/">scikit-fuzzy</a>, que implementa funções de pertinência, operadores e um módulo de controle (<code>skfuzzy.control</code>) pronto para sistemas Mamdani. A instalação é <code>pip install scikit-fuzzy pandas</code>.</p>
+<h3>Passo 1. Carregar os dados</h3>
+</div>
+<div class="col"><div class="code"><div class="fname">carregar.py</div><button class="btn copy" type="button">Copiar</button><pre><code class="py">import numpy as np, pandas as pd
+import skfuzzy as fuzz
+from skfuzzy import control as ctrl
+
+URL = ("https://archive.ics.uci.edu/ml/machine-learning-databases/"
+       "wine-quality/winequality-red.csv")
+df = pd.read_csv(URL, sep=";")      # 1599 linhas x 12 colunas
+print(df.corr(method="spearman")["quality"].sort_values())</code></pre></div></div>
+
+<div class="col"><h3>Passo 2. Variáveis linguísticas e funções de pertinência</h3>
+<p><code>Antecedent</code> são entradas e <code>Consequent</code> é a saída. <code>trapmf</code> recebe os quatro vértices do trapézio e <code>trimf</code> os três do triângulo.</p></div>
+<div class="col"><div class="code"><div class="fname">variaveis.py</div><button class="btn copy" type="button">Copiar</button><pre><code class="py">alcool   = ctrl.Antecedent(np.arange(8, 15.01, 0.01), "alcool")
+acidez   = ctrl.Antecedent(np.arange(0.1, 1.601, 0.005), "acidez")
+sulfatos = ctrl.Antecedent(np.arange(0.3, 2.001, 0.005), "sulfatos")
+qualidade = ctrl.Consequent(np.linspace(0, 10, 501), "qualidade",
+                            defuzzify_method="centroid")
+
+alcool["baixo"] = fuzz.trapmf(alcool.universe, [8, 8, 9.5, 10.5])
+alcool["medio"] = fuzz.trimf(alcool.universe, [9.5, 10.5, 11.6])
+alcool["alto"]  = fuzz.trapmf(alcool.universe, [10.6, 11.8, 15, 15])
+
+acidez["baixa"] = fuzz.trapmf(acidez.universe, [0.1, 0.1, 0.35, 0.5])
+acidez["media"] = fuzz.trimf(acidez.universe, [0.35, 0.58, 0.95])
+acidez["alta"]  = fuzz.trapmf(acidez.universe, [0.7, 1.0, 1.6, 1.6])
+
+sulfatos["baixo"]     = fuzz.trapmf(sulfatos.universe, [0.3, 0.3, 0.48, 0.6])
+sulfatos["adequado"]  = fuzz.trapmf(sulfatos.universe, [0.55, 0.68, 0.85, 1.0])
+sulfatos["excessivo"] = fuzz.trapmf(sulfatos.universe, [0.9, 1.1, 2.0, 2.0])
+
+qualidade["ruim"]      = fuzz.trapmf(qualidade.universe, [2, 3, 3.5, 5])
+qualidade["regular"]   = fuzz.trimf(qualidade.universe, [4, 5.2, 6.2])
+qualidade["boa"]       = fuzz.trimf(qualidade.universe, [5.4, 6.4, 7.4])
+qualidade["excelente"] = fuzz.trapmf(qualidade.universe, [6.6, 7.6, 9, 9])</code></pre></div></div>
+
+<div class="col"><h3>Passo 3. Base de regras</h3>
+<p>Os operadores <code>&amp;</code>, <code>|</code> e <code>~</code> correspondem a E (mínimo), OU (máximo) e NÃO (complemento).</p></div>
+<div class="col"><div class="code"><div class="fname">regras.py</div><button class="btn copy" type="button">Copiar</button><pre><code class="py">regras = [
+    ctrl.Rule(alcool["alto"] &amp; acidez["baixa"], qualidade["excelente"]),
+    ctrl.Rule(alcool["alto"] &amp; sulfatos["adequado"], qualidade["excelente"]),
+    ctrl.Rule(alcool["alto"] &amp; acidez["media"], qualidade["boa"]),
+    ctrl.Rule(alcool["medio"] &amp; acidez["baixa"] &amp; sulfatos["adequado"],
+              qualidade["boa"]),
+    ctrl.Rule(alcool["medio"] &amp; acidez["media"], qualidade["regular"]),
+    ctrl.Rule(alcool["medio"] &amp; sulfatos["baixo"], qualidade["regular"]),
+    ctrl.Rule(alcool["baixo"] &amp; acidez["baixa"], qualidade["regular"]),
+    ctrl.Rule(alcool["baixo"] &amp; acidez["media"], qualidade["regular"]),
+    ctrl.Rule(alcool["baixo"] &amp; sulfatos["baixo"], qualidade["ruim"]),
+    ctrl.Rule(acidez["alta"], qualidade["ruim"]),
+    ctrl.Rule(sulfatos["excessivo"], qualidade["regular"]),
+]
+sistema = ctrl.ControlSystem(regras)</code></pre></div></div>
+
+<div class="col"><h3>Passo 4. Inferência e decisão</h3></div>
+<div class="col"><div class="code"><div class="fname">decidir.py</div><button class="btn copy" type="button">Copiar</button><pre><code class="py">def indice(alc, va, sul):
+    sim = ctrl.ControlSystemSimulation(sistema)
+    sim.input["alcool"], sim.input["acidez"], sim.input["sulfatos"] = alc, va, sul
+    sim.compute()
+    return sim.output["qualidade"]
+
+LIM_PREMIUM, LIM_REVISAR = 6.6, 4.6     # definidos pela gestão
+
+def decisao(i):
+    if i &gt;= LIM_PREMIUM: return "Premium"
+    if i &lt; LIM_REVISAR:  return "Revisar"
+    return "Padrão"
+
+print(indice(12.5, 0.30, 0.75))   # 8.03  -> Premium
+df["indice"] = [indice(a, v, s) for a, v, s in
+                zip(df.alcohol, df["volatile acidity"], df.sulphates)]
+df["decisao"] = df.indice.map(decisao)</code></pre></div></div>
+
+<div class="col">
+<p>O notebook completo, com os gráficos das funções de pertinência, a visualização do centroide (<code>qualidade.view(sim=sim)</code>), as métricas e a superfície de controle, acompanha este artigo. O mesmo motor de inferência foi reescrito em JavaScript para os gráficos desta página e reproduz os resultados do scikit-fuzzy.</p>
+
+<h2 id="limites"><span class="num">04 · VANTAGENS E LIMITAÇÕES</span>Quando a lógica fuzzy é a ferramenta certa</h2>
+</div>
+<div class="wide"><div class="pros-cons">
+  <div class="panel"><h3>Vantagens</h3><ul>
+    <li><strong>Interpretável.</strong> Cada decisão pode ser explicada pelas regras que dispararam e com que força.</li>
+    <li><strong>Funciona sem dados rotulados.</strong> O conhecimento vem do especialista; os dados servem para validar.</li>
+    <li><strong>Resposta suave.</strong> Pequenas variações nas entradas geram pequenas variações na saída, sem degraus arbitrários.</li>
+    <li><strong>Tolera imprecisão.</strong> Lida bem com medições ruidosas e com conceitos vagos como "alto" ou "adequado".</li>
+    <li><strong>Fácil de ajustar.</strong> Mudar uma regra ou um vértice não exige retreinar nada.</li>
+  </ul></div>
+  <div class="panel"><h3>Limitações</h3><ul>
+    <li><strong>Explosão de regras.</strong> Com <i>n</i> variáveis de 3 termos, a base completa tem 3<sup><i>n</i></sup> regras. Acima de 4 ou 5 entradas fica inviável manter à mão.</li>
+    <li><strong>Depende do especialista.</strong> Funções e regras mal calibradas produzem resultados ruins, e não há garantia de ótimo.</li>
+    <li><strong>Menor poder preditivo.</strong> Modelos como random forest costumam errar menos quando há muitos dados rotulados.</li>
+    <li><strong>Sem validação formal embutida.</strong> A qualidade precisa ser medida à parte, como fizemos com Spearman e AUC.</li>
+    <li><strong>Custo de centroide.</strong> Mamdani com integração numérica é mais lento que Sugeno em sistemas de tempo real.</li>
+  </ul></div>
+</div></div>
+<div class="col">
+<p><strong>Use lógica fuzzy quando</strong> o problema tiver poucas variáveis, conhecimento especialista disponível, conceitos naturalmente vagos e necessidade de explicar a decisão: controle de processos, triagem, classificação de risco, avaliação de fornecedores, priorização de chamados. <strong>Prefira aprendizado de máquina</strong> quando houver muitas variáveis, muitos dados rotulados e a precisão importar mais que a explicação. Os dois também se combinam: sistemas <em>neuro-fuzzy</em> como o ANFIS aprendem as funções de pertinência a partir dos dados mantendo as regras legíveis.</p>
+
+<h2 id="sad"><span class="num">05 · APLICAÇÃO EM SAD</span>Do índice à decisão do gestor</h2>
+<p>Um Sistema de Apoio à Decisão não decide sozinho: ele organiza dados e modelos para que pessoas decidam melhor. O índice fuzzy alimenta os três níveis de decisão da vinícola.</p>
+<div class="levels">
+  <div class="level"><h4>Operacional<small>dia a dia da linha</small></h4><p>Cada lote recebe índice e destino assim que sai do laboratório. Só os lotes marcados como <em>Revisar</em> vão para a prova sensorial, o que concentra o tempo dos provadores onde há risco.</p></div>
+  <div class="level"><h4>Gerencial<small>tático, por safra</small></h4><p>O gerente de qualidade ajusta os limiares conforme a política do período: mais exigência no Premium protege a marca, menos exigência aumenta o volume de reserva. O painel abaixo simula esse trade-off com os 1.599 lotes.</p></div>
+  <div class="level"><h4>Estratégico<small>longo prazo</small></h4><p>As regras mostram o que puxa a qualidade para baixo. Se muitos lotes caem por <em>acidez alta</em>, a direção sabe que investir em higiene de tanques e controle de fermentação rende mais que comprar uvas mais caras.</p></div>
+</div>
+</div>
+
+<figure class="wide" id="painel">
+  <div class="panel">
+    <p class="panel-title">Painel do gerente de qualidade</p>
+    <p class="panel-sub">Defina os limiares e veja o efeito sobre os 1.599 lotes. "Classe real" vem da nota dos provadores: Premium = nota ≥ 7, Revisar = nota ≤ 4.</p>
+    <div class="mgr">
+      <div>
+        <div class="ctrl" style="margin-bottom:16px"><label for="th-p">Índice mínimo para Premium <output id="th-p-out"></output></label><input id="th-p" type="range" min="5.5" max="8" step="0.1" value="6.6"></div>
+        <div class="ctrl" style="margin-bottom:16px"><label for="th-r">Índice abaixo do qual Revisar <output id="th-r-out"></output></label><input id="th-r" type="range" min="3" max="5.5" step="0.1" value="4.6"></div>
+        <div class="btn-row" style="margin-bottom:6px"><button class="btn" type="button" data-pol="6.6,4.6">Equilibrada</button><button class="btn" type="button" data-pol="7.4,4.6">Proteger a marca</button><button class="btn" type="button" data-pol="6.6,3.6">Poupar provadores</button></div>
+        <div class="kpis">
+          <div class="kpi"><div class="v" id="k-prem"></div><div class="l">lotes enviados ao Premium</div></div>
+          <div class="kpi"><div class="v" id="k-prec"></div><div class="l">do Premium são de fato nota ≥ 7</div></div>
+          <div class="kpi"><div class="v" id="k-rec"></div><div class="l">dos vinhos nota ≥ 7 chegam ao Premium</div></div>
+          <div class="kpi"><div class="v" id="k-rev"></div><div class="l">lotes enviados à prova sensorial</div></div>
+        </div>
+      </div>
+      <div>
+        <p class="ctrl" style="margin:0 0 6px"><b>Matriz de confusão</b> · linhas = classe real, colunas = decisão do sistema</p>
+        <table class="cm" id="cm"></table>
+        <p class="ctrl" id="cm-note" style="margin:12px 0 0;line-height:1.5"></p>
+      </div>
+    </div>
+  </div>
+  <figcaption class="col"><b>Figura 7.</b> Simulação de política. Subir o limiar do Premium aumenta a precisão do rótulo e diminui o volume. Baixar o limiar de revisão economiza provas, mas deixa passar mais vinhos fracos.</figcaption>
+</figure>
+
+<div class="col">
+<p>É aqui que a lógica fuzzy mostra seu valor em SAD. O sistema não entrega só um rótulo: entrega um <strong>índice contínuo</strong>, as <strong>regras que o justificam</strong> e um <strong>ponto de ajuste</strong> que pertence ao gestor, não ao algoritmo. A decisão continua humana, mas passa a ser rápida, consistente e auditável.</p>
+
+<h3>Para levar</h3>
+<ul>
+  <li>Lógica fuzzy modela conceitos vagos com graus de pertinência entre 0 e 1.</li>
+  <li>O sistema Mamdani segue quatro passos: fuzzificar, avaliar regras, agregar e defuzzificar.</li>
+  <li>Com 3 medições e 11 regras sem treino, chegamos a Spearman 0,55 e AUC 0,85 nos dados reais.</li>
+  <li>Em SAD, o valor está na explicação das decisões e na possibilidade de o gestor ajustar a política.</li>
+</ul>
+
+<h2 style="font-size:26px">Referências</h2>
+<ol class="refs">
+  <li>Zadeh, L. A. (1965). Fuzzy sets. <em>Information and Control</em>, 8(3), 338–353.</li>
+  <li>Mamdani, E. H.; Assilian, S. (1975). An experiment in linguistic synthesis with a fuzzy logic controller. <em>International Journal of Man-Machine Studies</em>, 7(1), 1–13.</li>
+  <li>Takagi, T.; Sugeno, M. (1985). Fuzzy identification of systems and its applications to modeling and control. <em>IEEE Transactions on Systems, Man, and Cybernetics</em>, 15(1), 116–132.</li>
+  <li>Cortez, P.; Cerdeira, A.; Almeida, F.; Matos, T.; Reis, J. (2009). Modeling wine preferences by data mining from physicochemical properties. <em>Decision Support Systems</em>, 47(4), 547–553. Dados: <a href="https://archive.ics.uci.edu/dataset/186/wine+quality">UCI Machine Learning Repository</a>.</li>
+  <li>Warner, J. et al. scikit-fuzzy: Fuzzy logic toolkit for SciPy. <a href="https://github.com/scikit-fuzzy/scikit-fuzzy">github.com/scikit-fuzzy/scikit-fuzzy</a>.</li>
+  <li>Turban, E.; Sharda, R.; Delen, D. (2011). <em>Decision Support and Business Intelligence Systems</em>. 9. ed. Pearson.</li>
+</ol>
+<footer>REVISA · Sistemas de Apoio à Decisão · FT Unicamp, Limeira · Conteúdo gratuito para fins educacionais.</footer>
+</div>
+</article>
+</main>
+<div class="tooltip" id="tip" role="tooltip"></div>
+
+<script>
+const M = {"vars":{"alcool":{"label":"Teor alcoólico (% vol)","col":"alcohol","range":[8,15],"termos":{"baixo":[8,8,9.5,10.5],"medio":[9.5,10.5,10.5,11.6],"alto":[10.6,11.8,15,15]}},"acidez":{"label":"Acidez volátil (g/L)","col":"volatile acidity","range":[0.1,1.6],"termos":{"baixa":[0.1,0.1,0.35,0.5],"media":[0.35,0.58,0.58,0.95],"alta":[0.7,1.0,1.6,1.6]}},"sulfatos":{"label":"Sulfatos (g/L)","col":"sulphates","range":[0.3,2.0],"termos":{"baixo":[0.3,0.3,0.48,0.6],"adequado":[0.55,0.68,0.85,1.0],"excessivo":[0.9,1.1,2.0,2.0]}}},"saida":{"label":"Índice de qualidade (0–10)","range":[0,10],"termos":{"ruim":[2,3,3.5,5],"regular":[4,5.2,5.2,6.2],"boa":[5.4,6.4,6.4,7.4],"excelente":[6.6,7.6,9,9]}},"regras":[[{"alcool":"alto","acidez":"baixa"},"excelente"],[{"alcool":"alto","sulfatos":"adequado"},"excelente"],[{"alcool":"alto","acidez":"media"},"boa"],[{"alcool":"medio","acidez":"baixa","sulfatos":"adequado"},"boa"],[{"alcool":"medio","acidez":"media"},"regular"],[{"alcool":"medio","sulfatos":"baixo"},"regular"],[{"alcool":"baixo","acidez":"baixa"},"regular"],[{"alcool":"baixo","acidez":"media"},"regular"],[{"alcool":"baixo","sulfatos":"baixo"},"ruim"],[{"acidez":"alta"},"ruim"],[{"sulfatos":"excessivo"},"regular"]],"dados":[[9.4,0.7,0.56,5,4.33],[9.8,0.88,0.68,5,3.74],[9.8,0.76,0.65,5,4.47],[9.8,0.28,0.58,6,4.97],[9.4,0.7,0.56,5,4.33],[9.4,0.66,0.56,5,4.37],[9.4,0.6,0.46,5,4.04],[10.0,0.65,0.47,7,4.1],[9.5,0.58,0.57,7,4.5],[10.5,0.5,0.8,5,5.13],[9.2,0.58,0.54,5,4.24],[10.5,0.5,0.8,5,5.13],[9.9,0.615,0.52,5,4.09],[9.1,0.61,1.56,5,5.13],[9.2,0.62,0.88,5,5.13],[9.2,0.62,0.93,5,5.13],[10.5,0.28,0.75,7,6.4],[9.3,0.56,1.28,5,5.13],[9.0,0.59,0.5,4,4.08],[9.2,0.32,1.08,6,5.13],[9.4,0.22,0.53,6,4.18],[9.7,0.39,0.65,5,5.43],[9.5,0.43,0.91,5,5.12],[9.4,0.49,0.53,5,4.1],[9.7,0.4,0.63,6,5.44],[9.3,0.39,0.56,5,4.35],[9.5,0.41,0.59,5,4.81],[9.5,0.43,0.91,5,5.12],[9.4,0.71,0.55,5,4.24],[9.8,0.645,0.59,6,4.83],[10.1,0.675,0.54,5,4.23],[10.6,0.685,0.57,6,5.13],[9.8,0.655,0.66,5,5.13],[9.4,0.605,0.52,6,4.14],[9.2,0.32,0.55,5,4.3],[9.6,0.645,0.55,6,4.29],[10.8,0.6,0.6,6,5.91],[9.7,0.38,0.73,7,5.42],[9.8,1.13,0.48,4,3.76],[10.5,0.45,0.83,5,5.65],[10.5,0.45,0.83,5,5.65],[9.3,0.61,0.51,4,4.1],[10.5,0.49,0.9,6,5.26],[10.3,0.66,1.2,5,5.13],[9.5,0.67,0.52,5,4.11],[13.1,0.52,0.56,4,6.61],[9.2,0.935,0.73,5,3.48],[9.5,0.29,0.58,5,4.66],[9.2,0.4,0.56,5,4.33],[9.2,0.31,0.58,5,4.66],[9.2,0.66,0.74,5,5.13],[9.4,0.52,0.63,6,5.13],[9.4,0.5,0.64,6,5.13],[9.4,0.38,0.56,5,4.37],[10.2,0.51,0.63,6,5.13],[9.5,0.62,0.53,5,4.18],[9.6,0.42,0.63,5,5.32],[9.4,0.63,0.77,5,5.13],[10.0,0.59,0.59,5,4.77],[9.4,0.39,0.54,6,4.2],[9.2,0.4,0.64,5,5.13],[9.3,0.69,0.71,5,5.13],[9.5,0.52,0.62,7,5.13],[9.8,0.735,0.57,5,4.41],[10.9,0.725,0.39,5,5.21],[10.9,0.725,0.39,5,5.21],[9.6,0.52,0.58,5,4.63],[10.7,0.705,0.58,5,5.54],[10.7,0.32,0.79,5,6.62],[10.5,0.705,0.95,6,5.06],[9.5,0.63,0.54,6,4.23],[9.5,0.67,0.48,5,4.01],[9.5,0.69,0.48,5,4.0],[9.2,0.675,0.53,4,4.15],[9.6,0.32,0.82,5,5.29],[10.5,0.41,0.66,5,5.93],[10.5,0.41,0.66,5,5.93],[10.7,0.785,0.55,6,4.45],[10.1,0.75,0.52,5,4.23],[9.1,0.625,1.12,4,5.13],[9.2,0.45,0.56,5,4.2],[9.4,0.43,1.28,5,5.13],[9.1,0.5,0.57,5,4.44],[9.4,0.67,1.14,5,5.13],[10.3,0.3,0.78,6,6.04],[10.1,0.55,0.59,5,4.81],[9.9,0.49,1.95,6,5.13],[9.6,0.49,0.64,5,5.26],[9.5,0.39,1.22,5,5.13],[9.0,0.62,0.53,5,4.18],[9.5,0.52,0.54,5,4.2],[9.9,0.49,1.95,6,5.13],[9.8,0.49,1.98,5,5.13],[9.6,0.49,0.64,5,5.26],[10.5,1.02,0.48,4,4.04],[12.9,0.6,0.6,6,7.1],[10.7,0.775,0.56,5,4.83],[9.2,0.5,0.63,5,5.13],[9.8,0.9,0.56,5,3.84],[9.0,0.545,0.59,6,4.85],[10.2,0.61,0.61,6,5.13],[10.4,0.5,0.56,6,4.77],[9.0,0.545,0.59,6,4.85],[9.2,0.575,0.51,5,4.11],[9.4,0.49,0.48,5,3.97],[9.2,0.575,0.51,5,4.11],[9.3,0.41,1.31,5,5.13],[9.3,0.63,0.79,5,5.13],[9.6,0.33,0.8,6,5.29],[9.3,0.785,0.69,5,4.28],[9.5,0.56,0.93,5,5.13],[9.8,0.62,0.66,5,5.13],[9.8,0.6,0.66,5,5.13],[9.7,0.31,0.67,6,5.42],[9.5,0.56,0.93,5,5.13],[10.5,0.4,0.63,6,5.99],[10.0,0.54,0.61,6,5.12],[9.4,0.56,0.5,6,4.08],[10.9,0.55,0.6,6,6.18],[9.2,0.69,0.54,6,4.19],[9.0,1.07,0.57,5,3.4],[10.9,0.55,0.6,6,6.18],[9.2,0.695,0.52,5,4.09],[9.5,0.71,0.53,5,4.12],[9.5,0.5,0.48,5,3.98],[9.4,0.62,0.7,5,5.13],[10.9,1.33,0.49,5,3.98],[10.9,1.33,0.48,5,3.98],[10.5,0.59,0.92,7,5.13],[9.4,0.38,0.57,5,4.49],[9.4,0.745,0.66,5,4.6],[13.0,0.5,0.63,5,7.35],[13.0,0.5,0.63,5,7.35],[9.8,0.5,0.58,6,4.6],[9.9,1.04,0.55,6,3.85],[9.6,0.745,0.82,5,4.6],[9.5,0.715,0.77,5,4.93],[9.2,0.415,0.64,5,5.12],[9.5,0.56,0.54,5,4.23],[9.5,0.56,0.54,5,4.23],[9.6,0.745,0.82,5,4.6],[9.5,0.715,0.77,5,4.93],[14.0,0.34,0.79,6,8.03],[9.4,0.39,0.58,5,4.62],[14.0,0.34,0.79,6,8.03],[9.4,0.67,0.62,5,5.13],[10.0,0.68,0.52,5,4.1],[9.3,0.49,0.8,5,5.13],[10.2,0.49,0.58,6,4.72],[10.5,0.4,0.61,6,5.93],[10.3,0.33,0.53,6,4.5],[9.4,0.52,2.0,4,5.13],[10.1,0.6,0.54,5,4.23],[10.1,0.6,0.54,5,4.23],[10.5,0.43,0.72,5,5.8],[10.5,0.43,0.71,5,5.8],[10.5,0.43,0.72,5,5.8],[10.5,0.43,0.71,5,5.8],[9.3,0.68,0.5,5,4.04],[9.3,0.6,0.57,6,4.5],[9.6,0.95,0.56,5,3.56],[9.2,0.68,1.08,4,5.13],[10.0,0.53,0.56,6,4.25],[9.4,0.6,0.49,5,4.06],[9.4,0.59,0.49,5,4.06],[9.5,0.63,0.62,5,5.13],[10.2,0.64,0.52,5,4.39],[9.0,0.55,0.48,4,4.04],[10.4,0.63,0.55,6,4.81],[9.5,0.705,1.59,5,5.07],[9.1,0.885,0.33,4,3.64],[9.2,0.42,0.61,6,5.12],[9.2,0.42,0.61,6,5.12],[11.5,0.62,0.57,6,6.59],[9.5,0.38,0.47,5,4.02],[9.5,0.5,0.78,5,5.13],[9.5,0.38,0.47,5,4.02],[10.5,0.52,0.61,6,5.13],[9.6,0.805,0.56,5,4.14],[9.5,0.61,0.59,5,4.86],[9.5,0.61,0.59,5,4.86],[9.3,0.61,1.02,5,5.13],[9.3,0.73,0.52,5,4.05],[9.3,0.61,0.58,5,4.65],[9.3,0.62,0.58,6,4.65],[9.7,0.31,0.53,5,4.16],[9.2,0.39,0.55,5,4.27],[9.7,0.705,0.49,5,4.03],[9.5,0.5,0.55,5,4.24],[9.5,0.49,0.55,5,4.22],[9.4,0.5,0.62,5,5.13],[9.8,0.37,0.62,6,5.53],[9.5,0.63,0.61,5,5.13],[9.7,0.55,0.55,5,4.28],[9.7,0.55,0.55,5,4.28],[9.4,0.59,0.54,5,4.24],[10.2,0.58,0.59,5,4.83],[10.1,0.3,0.97,6,5.52],[13.0,0.835,0.85,7,6.34],[11.4,1.09,0.43,4,3.64],[10.3,0.32,0.82,7,6.04],[9.3,0.37,1.03,5,5.13],[9.5,0.5,0.79,5,5.13],[9.2,0.42,0.55,5,4.18],[9.2,0.43,0.56,6,4.22],[10.8,0.3,0.77,7,6.81],[10.8,0.3,0.77,7,6.81],[9.3,0.57,0.53,5,4.18],[9.4,0.44,0.67,5,5.12],[10.5,0.3,0.88,7,6.4],[12.4,0.53,0.86,6,7.49],[10.0,0.725,0.56,6,4.25],[10.2,0.44,0.67,6,5.72],[10.1,0.57,0.43,5,4.23],[9.8,0.735,0.71,6,4.7],[10.5,0.49,0.76,5,5.26],[11.0,0.625,0.57,5,6.03],[9.1,0.725,0.55,5,4.22],[9.7,0.49,0.54,5,4.15],[9.5,0.53,0.6,5,5.13],[9.4,0.34,0.59,6,4.86],[9.4,0.53,0.57,5,4.48],[9.5,0.61,0.6,5,5.13],[10.0,0.645,0.6,6,5.12],[10.4,0.635,0.57,4,4.8],[10.5,0.43,0.58,6,5.59],[9.5,0.59,1.61,6,5.13],[9.8,0.82,0.63,5,4.05],[10.5,0.43,0.58,6,5.59],[11.0,0.52,0.5,5,5.6],[12.2,0.48,0.62,7,7.33],[9.9,0.38,0.52,6,4.09],[9.6,0.37,0.7,6,5.29],[11.0,0.52,0.5,5,5.6],[9.0,1.0,0.55,6,3.4],[9.0,0.63,0.58,6,4.65],[9.0,0.63,0.58,6,4.65],[9.2,0.645,0.58,6,4.64],[9.0,0.63,0.58,6,4.65],[9.0,1.0,0.55,6,3.4],[9.3,0.635,1.09,5,5.13],[10.9,0.38,0.71,6,6.71],[9.8,0.58,0.49,6,4.08],[9.2,0.21,0.84,7,5.13],[9.2,0.21,0.84,7,5.13],[9.9,0.66,0.96,6,5.13],[9.5,0.68,0.52,5,4.1],[9.3,0.6,0.45,5,4.04],[9.8,0.53,0.48,6,4.08],[9.9,0.66,0.96,6,5.13],[10.0,0.32,0.78,6,5.72],[9.9,0.6,0.7,6,5.13],[10.5,0.35,0.53,5,5.12],[9.5,0.775,0.59,5,4.35],[9.9,0.6,0.7,6,5.13],[9.3,0.57,0.57,5,4.5],[9.2,0.34,0.62,5,5.13],[9.2,0.695,0.67,5,5.13],[9.4,0.41,1.26,5,5.13],[10.5,0.31,0.8,7,6.4],[9.3,0.33,0.65,5,5.13],[9.4,0.975,0.6,4,3.41],[10.0,0.52,0.57,5,4.37],[9.3,0.37,0.67,5,5.13],[10.9,0.56,0.87,5,6.18],[10.2,0.26,0.72,7,5.92],[9.8,0.87,0.72,4,3.79],[12.8,0.35,0.86,8,8.03],[9.4,0.54,0.91,6,5.13],[10.1,0.18,0.97,6,5.52],[10.7,0.545,0.67,6,5.58],[10.1,0.18,0.97,6,5.52],[10.1,0.37,0.78,5,5.82],[9.4,0.715,0.64,5,4.93],[9.4,0.65,0.77,5,5.13],[10.7,0.545,0.67,6,5.58],[9.4,0.54,0.91,6,5.13],[10.1,0.18,0.97,6,5.52],[12.6,0.32,0.82,8,8.03],[10.5,0.4,0.77,7,6.0],[9.3,0.26,0.82,6,5.13],[9.9,0.27,1.08,7,5.13],[9.1,0.52,0.57,5,4.47],[10.5,0.4,0.77,7,6.0],[9.8,0.59,0.71,5,5.13],[9.8,0.59,0.71,5,5.13],[10.3,0.45,0.76,6,5.65],[10.3,0.4,0.7,6,6.0],[10.6,0.52,0.86,7,5.13],[9.2,0.42,0.95,5,5.12],[10.6,0.52,0.86,7,5.13],[10.5,0.2,0.71,5,6.4],[10.3,0.55,0.64,6,5.13],[10.1,0.36,0.6,6,5.71],[9.5,0.34,0.81,6,5.13],[9.5,0.5,0.64,5,5.13],[9.9,0.83,0.52,5,3.96],[9.6,0.63,0.73,5,5.13],[9.7,0.65,0.8,5,5.13],[9.6,0.67,0.71,5,5.13],[10.7,0.53,0.59,6,5.58],[10.1,0.18,0.64,6,5.82],[10.0,0.705,0.72,5,5.04],[9.5,0.67,0.54,5,4.21],[9.2,0.65,0.52,5,4.12],[9.3,0.53,0.59,6,4.84],[9.4,0.62,0.52,5,4.13],[9.5,0.41,0.62,6,5.13],[9.5,0.43,0.63,6,5.12],[9.5,0.29,0.53,6,4.18],[9.3,0.53,0.59,6,4.84],[9.4,0.53,0.54,6,4.21],[9.5,0.46,0.63,6,5.12],[9.4,0.47,0.53,5,4.06],[11.0,0.36,0.68,5,7.03],[11.0,0.35,0.65,6,7.13],[10.1,0.56,0.65,5,5.13],[10.4,0.77,0.64,6,4.39],[11.5,0.66,0.71,7,7.27],[10.4,0.77,0.64,6,4.39],[11.5,0.66,0.71,7,7.27],[9.7,0.61,0.62,5,5.13],[9.3,0.62,0.63,5,5.13],[9.5,0.59,0.7,6,5.13],[9.2,0.49,0.69,6,5.13],[9.2,0.49,0.69,6,5.13],[11.5,0.53,0.74,7,7.27],[11.5,0.44,0.83,5,7.39],[9.7,0.27,0.67,6,5.42],[9.5,0.46,0.62,5,5.12],[12.5,0.36,0.66,6,7.96],[12.5,0.36,0.66,6,7.96],[9.4,0.58,0.54,6,4.24],[11.0,0.56,0.52,5,5.6],[11.7,0.65,0.74,7,7.48],[12.2,0.695,0.84,7,7.54],[12.5,0.43,0.7,6,7.7],[10.3,0.43,0.64,5,5.8],[11.5,0.49,1.0,6,5.93],[9.8,0.28,1.36,7,5.13],[9.2,0.34,1.18,6,5.13],[11.3,0.42,0.87,6,7.03],[9.8,0.39,0.75,6,5.53],[9.8,0.39,0.75,6,5.53],[10.7,0.57,0.78,6,5.58],[9.9,0.685,0.81,5,5.13],[12.3,0.815,0.89,7,6.2],[12.0,0.49,0.93,6,6.98],[10.0,0.56,0.92,6,5.12],[9.4,0.785,0.86,6,4.28],[9.9,0.67,0.98,6,5.13],[9.4,0.795,0.83,6,4.21],[9.3,0.665,0.73,5,5.13],[13.0,0.53,0.77,5,7.52],[11.9,0.21,0.59,6,8.03],[12.8,0.75,0.61,6,6.43],[11.0,0.41,0.88,5,6.66],[11.7,0.42,0.75,7,7.7],[10.4,0.43,0.85,7,5.8],[9.8,0.38,0.68,6,5.53],[9.4,0.7,0.7,5,5.13],[9.9,0.45,0.91,6,5.65],[10.0,0.58,0.56,5,4.25],[10.2,0.46,0.87,5,5.56],[10.0,0.615,0.73,7,5.12],[11.8,0.42,0.93,6,7.17],[10.0,0.615,0.73,7,5.12],[9.0,0.575,0.69,5,5.13],[9.4,0.34,0.64,5,5.13],[12.0,0.27,1.13,7,6.97],[9.9,0.765,0.78,5,4.43],[8.7,0.24,0.87,6,5.13],[10.6,0.28,1.04,6,5.13],[9.2,0.55,0.63,5,5.13],[10.8,0.41,0.81,6,6.36],[11.8,0.54,0.83,7,7.51],[11.0,0.45,1.11,6,6.26],[12.0,0.27,1.13,7,6.97],[13.3,0.625,0.99,6,6.0],[10.8,0.42,0.7,6,6.3],[9.4,0.26,0.8,6,5.13],[10.0,0.415,0.8,6,5.72],[9.4,0.26,0.8,6,5.13],[9.4,0.26,0.8,6,5.13],[9.2,0.51,0.74,5,5.13],[9.7,0.63,0.76,6,5.13],[9.2,0.54,0.74,6,5.13],[9.6,0.66,0.54,6,4.21],[9.2,0.46,0.74,6,5.12],[10.0,0.38,0.7,7,5.72],[12.9,0.85,0.82,8,6.26],[10.0,0.415,0.8,6,5.72],[9.5,0.37,0.51,5,4.1],[9.1,0.665,0.54,5,4.21],[9.9,0.6,0.57,5,4.42],[13.0,0.37,0.6,7,7.89],[9.9,0.735,0.53,5,4.09],[11.0,0.59,0.65,6,6.4],[11.0,0.59,0.65,6,6.4],[9.4,0.765,0.55,5,4.16],[9.9,0.735,0.53,5,4.09],[10.8,0.26,0.47,6,5.88],[10.5,0.48,0.61,6,5.37],[10.5,0.6,0.63,6,5.13],[9.1,0.69,0.61,5,5.13],[10.1,0.31,0.76,6,5.82],[10.8,0.44,0.65,6,6.2],[10.8,0.39,0.63,7,6.48],[11.3,0.34,0.7,6,7.57],[9.6,0.46,0.57,4,4.55],[9.5,0.43,0.62,6,5.12],[9.5,0.45,0.62,5,5.12],[9.3,0.735,0.64,5,4.7],[11.7,0.4,0.82,7,7.77],[9.5,0.52,0.61,5,5.13],[9.3,0.725,1.07,5,4.85],[11.7,0.48,0.66,6,7.51],[10.5,0.58,0.48,5,5.13],[10.4,0.38,0.76,6,6.14],[9.9,0.77,0.68,5,4.39],[11.8,0.56,0.73,7,7.5],[12.3,0.84,0.56,7,4.64],[10.9,0.96,0.44,5,4.0],[11.0,0.24,0.9,7,7.13],[10.9,0.96,0.44,5,4.0],[12.3,0.84,0.56,7,4.64],[11.4,0.67,0.49,6,6.05],[10.6,0.78,0.56,6,4.31],[9.3,0.52,0.6,5,5.13],[10.4,0.84,0.6,6,3.94],[11.0,0.24,0.9,7,7.13],[9.2,0.55,0.56,5,4.38],[12.8,0.37,0.65,6,7.89],[9.5,0.39,0.49,5,4.02],[9.9,0.41,0.89,6,5.63],[9.5,0.39,0.49,5,4.02],[10.2,0.67,0.56,6,4.39],[11.2,0.45,0.66,6,6.79],[9.9,0.41,0.89,6,5.63],[9.3,0.62,0.6,5,5.13],[9.8,0.31,0.82,8,5.53],[11.3,0.4,0.68,6,7.12],[11.2,0.685,0.68,7,6.77],[11.6,0.44,0.63,7,7.48],[12.5,0.57,0.84,7,7.5],[10.1,0.735,0.56,6,4.29],[10.5,0.38,0.73,5,6.14],[11.2,0.48,0.72,5,6.77],[10.2,0.53,0.56,6,4.39],[10.8,0.39,0.61,6,6.49],[10.8,0.39,0.61,6,6.49],[9.1,0.37,1.06,6,5.13],[10.0,0.56,0.63,6,5.12],[11.2,0.33,0.74,7,7.42],[11.1,0.23,0.63,5,7.28],[13.4,0.62,0.69,8,7.5],[10.3,0.59,0.58,5,4.64],[9.6,0.63,0.58,5,4.65],[11.2,0.33,0.74,7,7.42],[9.0,0.58,0.57,3,4.5],[11.3,0.43,0.61,6,6.88],[9.3,0.615,0.61,5,5.13],[11.8,0.26,0.61,5,8.03],[9.0,0.66,0.53,5,4.16],[9.2,0.315,0.7,6,5.13],[9.7,0.29,0.91,5,5.42],[11.5,0.5,0.72,6,7.29],[14.0,0.46,0.79,6,7.62],[9.2,0.36,0.62,6,5.13],[9.8,0.82,0.58,5,4.05],[10.6,0.32,0.61,5,6.4],[11.4,0.54,0.71,6,7.1],[10.4,0.37,0.82,6,6.2],[10.6,0.35,0.79,5,6.4],[9.4,0.28,0.89,6,5.13],[10.2,0.68,0.6,5,5.13],[9.7,0.27,0.7,5,5.42],[11.0,0.24,1.06,6,6.27],[10.2,0.68,0.6,5,5.13],[10.1,0.685,0.7,6,5.13],[9.2,0.28,0.66,5,5.13],[11.7,0.3,0.92,8,7.71],[9.4,0.36,1.05,5,5.13],[9.4,0.36,1.06,5,5.13],[13.4,0.44,0.66,6,7.61],[10.0,0.67,0.47,5,4.1],[10.0,0.67,0.47,5,4.1],[10.0,0.645,0.42,6,4.1],[10.8,0.32,0.92,7,6.62],[10.2,0.39,0.75,6,5.92],[10.6,0.775,0.67,6,4.35],[13.3,0.41,0.79,7,7.76],[13.4,0.4,0.9,7,7.67],[11.6,0.69,0.74,6,7.46],[12.1,0.39,0.55,6,7.75],[11.0,0.35,0.65,8,7.13],[9.0,0.52,0.65,6,5.13],[11.1,0.34,0.79,5,7.28],[11.0,0.35,0.65,8,7.13],[11.6,0.69,0.74,6,7.46],[9.0,0.52,0.65,6,5.13],[12.0,0.44,0.85,7,7.67],[12.0,0.44,0.85,7,7.67],[10.9,0.26,1.04,7,6.12],[10.8,0.24,1.05,7,5.87],[12.5,0.49,0.78,7,7.56],[10.8,0.24,1.02,7,5.93],[9.5,0.67,0.71,6,5.13],[10.2,0.59,0.63,6,5.13],[11.4,0.29,0.68,7,7.71],[9.5,0.42,0.61,5,5.12],[10.2,0.59,0.63,6,5.13],[9.7,0.4,0.81,6,5.44],[11.8,0.51,0.66,7,7.47],[11.8,0.51,0.66,7,7.47],[9.3,0.655,1.14,5,5.13],[11.9,0.6,0.74,6,7.5],[8.4,0.61,0.63,3,5.13],[11.7,0.21,0.68,6,8.02],[11.0,0.365,0.78,5,6.99],[10.0,0.25,0.9,6,5.72],[9.1,0.41,0.64,5,5.13],[9.8,0.39,0.99,5,5.25],[9.4,0.4,0.55,5,4.25],[9.5,0.43,0.64,5,5.12],[9.9,0.64,0.67,5,5.13],[11.0,0.365,0.78,5,6.99],[11.4,0.38,0.77,6,7.41],[8.7,0.42,0.75,6,5.12],[9.4,0.63,0.57,5,4.5],[10.3,0.22,0.87,6,6.04],[10.3,0.38,0.61,5,5.96],[10.3,0.38,0.61,5,5.96],[12.8,0.27,0.66,6,8.03],[10.0,0.48,0.56,6,4.39],[10.3,0.22,0.87,6,6.04],[9.4,0.63,0.57,5,4.5],[10.7,0.825,0.77,6,4.52],[12.0,0.35,0.66,7,8.03],[11.2,0.5,0.62,5,6.77],[9.6,0.59,0.67,5,5.13],[11.0,0.46,0.73,6,6.45],[9.9,0.715,0.59,5,4.81],[11.0,0.66,0.72,6,6.4],[8.4,0.31,0.79,6,5.13],[9.1,0.47,0.59,5,4.78],[9.5,0.55,0.78,6,5.13],[10.7,0.31,0.86,6,6.62],[10.4,0.35,0.75,6,6.2],[9.4,0.53,0.61,6,5.13],[9.5,0.51,0.56,6,4.34],[10.0,0.43,0.73,6,5.72],[10.0,0.46,0.74,6,5.56],[11.5,1.04,0.62,5,5.2],[11.1,0.645,0.74,5,6.59],[11.1,0.645,0.74,5,6.59],[11.7,0.53,0.56,6,6.61],[11.1,0.645,0.74,5,6.59],[11.7,0.53,0.56,6,6.61],[12.7,0.47,0.68,6,7.6],[11.4,0.6,0.57,5,6.44],[9.2,0.44,0.58,5,4.46],[9.2,0.54,0.61,5,5.13],[10.1,0.29,0.61,6,5.76],[12.7,0.47,0.68,6,7.6],[11.4,0.6,0.57,5,6.44],[9.0,0.7,0.6,6,5.13],[9.0,0.7,0.6,6,5.13],[10.7,0.5,0.79,6,5.61],[11.7,0.36,0.57,6,7.96],[11.0,0.35,0.91,6,7.02],[11.7,0.36,0.57,6,7.96],[10.4,0.24,0.61,5,6.13],[9.6,0.59,0.56,4,4.38],[10.0,0.34,0.7,6,5.72],[10.2,0.27,0.8,6,5.92],[10.0,0.5,0.52,4,4.1],[9.5,0.44,0.6,5,5.12],[9.8,0.47,0.6,5,5.47],[9.8,0.31,0.51,6,4.08],[9.6,0.5,0.44,5,4.0],[9.6,0.5,0.44,5,4.0],[9.2,0.49,0.43,5,3.97],[9.9,0.28,0.66,7,5.63],[10.7,0.33,0.76,7,6.62],[9.6,0.51,0.66,6,5.13],[10.6,0.31,1.02,7,5.13],[9.3,0.73,0.59,5,4.75],[14.0,0.42,0.74,8,7.73],[10.5,0.29,0.74,7,6.4],[9.7,0.45,0.57,5,4.63],[11.5,0.39,0.5,6,7.54],[9.7,0.45,0.57,5,4.63],[9.0,0.49,0.58,5,4.59],[9.5,0.72,0.53,5,4.11],[9.3,0.595,0.57,5,4.5],[9.3,0.4,0.6,6,5.13],[10.0,0.58,0.63,6,5.12],[9.8,0.585,0.48,6,4.08],[9.3,0.59,0.7,6,5.13],[10.0,0.915,0.47,4,3.98],[9.0,0.46,0.56,6,4.23],[9.3,0.835,0.52,5,3.85],[9.0,0.46,0.56,6,4.23],[9.1,0.58,0.62,6,5.13],[9.2,0.6,0.59,6,4.86],[12.2,0.41,0.79,7,7.76],[10.5,0.48,0.53,6,5.12],[10.4,0.65,0.64,6,5.13],[12.7,0.36,0.52,6,7.96],[9.2,0.24,0.54,5,4.24],[9.4,0.38,0.54,5,4.22],[10.0,0.64,0.6,6,5.12],[9.8,0.39,0.74,5,5.53],[10.2,0.755,1.36,6,4.62],[9.7,0.6,0.57,5,4.49],[9.7,0.6,0.57,5,4.49],[9.8,0.31,0.93,6,5.53],[10.2,0.46,0.7,5,5.56],[9.3,0.37,0.8,5,5.13],[9.4,0.54,0.61,5,5.13],[9.4,0.56,0.62,5,5.13],[9.5,0.58,0.55,5,4.3],[12.1,0.51,0.96,6,6.5],[10.2,0.69,0.72,5,5.13],[10.2,0.69,0.72,5,5.13],[9.1,0.6,0.49,5,4.06],[9.1,0.6,0.49,5,4.06],[9.3,0.54,0.6,6,5.13],[9.3,0.685,0.61,5,5.13],[9.3,0.54,0.6,6,5.13],[9.5,0.28,0.63,5,5.13],[10.5,0.41,0.57,6,5.55],[11.3,0.935,0.64,4,5.41],[9.5,0.35,0.58,5,4.66],[9.7,0.84,0.55,5,3.94],[9.4,0.88,0.53,5,3.74],[9.4,0.885,0.53,5,3.71],[10.2,0.915,0.65,7,3.57],[10.3,0.29,1.36,6,5.13],[9.4,0.54,0.62,5,5.13],[9.5,0.59,0.63,5,5.13],[9.4,0.54,0.62,5,5.13],[9.5,0.59,0.63,5,5.13],[9.4,0.54,0.62,5,5.13],[10.1,0.64,0.69,7,5.13],[10.1,0.67,0.63,5,5.13],[11.0,0.845,0.58,4,5.07],[11.2,0.48,0.67,7,6.77],[11.3,0.42,0.57,6,6.97],[9.6,0.43,0.5,5,3.93],[11.2,0.88,0.67,5,5.47],[14.9,0.36,0.84,5,7.98],[12.0,0.33,0.54,6,8.03],[9.5,0.47,0.46,5,3.93],[9.4,0.55,0.61,5,5.13],[9.6,0.43,0.5,5,3.93],[10.5,0.5,0.68,7,5.13],[9.6,0.52,0.81,6,5.13],[11.0,0.84,0.57,4,4.91],[9.6,0.52,0.81,6,5.13],[9.0,0.42,0.64,5,5.12],[9.6,0.57,0.7,6,5.13],[10.2,0.28,0.79,6,5.92],[10.2,0.4,0.66,5,5.91],[9.7,0.59,0.56,5,4.37],[9.5,0.49,0.6,6,5.13],[9.2,0.34,0.66,6,5.13],[11.0,0.73,0.57,5,5.69],[9.2,0.34,0.66,6,5.13],[10.0,0.4,0.58,5,4.95],[9.5,0.73,0.52,5,4.05],[9.5,1.24,0.53,5,3.4],[9.5,0.73,0.52,5,4.05],[9.3,0.4,0.67,6,5.13],[10.2,0.41,0.65,5,5.89],[9.3,0.4,0.67,6,5.13],[9.9,0.8,0.48,5,3.97],[10.0,0.78,0.53,5,4.1],[9.6,0.26,0.54,5,4.23],[9.0,0.43,0.49,5,3.91],[10.2,0.45,0.49,6,4.39],[9.8,0.46,0.54,5,4.08],[11.3,0.78,0.56,5,5.19],[9.4,0.98,0.48,5,3.4],[11.3,0.78,0.56,5,5.19],[9.1,0.65,0.6,5,5.13],[9.7,0.64,0.59,5,4.85],[9.4,0.66,0.47,5,4.02],[9.4,0.38,1.05,5,5.13],[10.7,1.185,0.54,3,3.91],[9.8,0.92,0.54,5,3.82],[9.0,0.49,1.17,5,5.13],[9.4,0.48,0.62,5,5.12],[9.4,0.47,0.61,5,5.12],[12.8,0.47,0.62,6,7.35],[9.5,0.65,0.67,6,5.13],[9.5,0.65,0.67,6,5.13],[9.7,0.615,0.53,5,4.16],[10.8,0.38,0.62,6,6.56],[10.1,1.02,0.57,6,3.72],[9.5,0.65,0.67,6,5.13],[9.4,0.64,0.67,6,5.13],[9.6,0.38,0.7,4,5.3],[9.7,0.765,0.54,4,4.1],[9.9,1.035,0.49,5,3.85],[10.0,0.78,0.47,5,4.1],[10.5,0.49,0.51,5,5.13],[11.6,0.545,0.61,6,7.19],[10.0,0.31,0.66,6,5.72],[10.1,1.025,0.57,5,3.72],[9.5,0.565,0.61,5,5.13],[9.4,0.69,0.45,5,4.0],[9.4,0.43,0.46,5,3.89],[9.8,0.74,0.51,5,4.03],[9.2,0.49,0.48,6,3.97],[9.4,0.43,0.46,5,3.89],[10.0,0.46,0.57,5,4.65],[9.6,0.56,0.44,5,4.06],[9.5,0.66,0.54,5,4.21],[9.6,0.56,0.44,5,4.06],[9.2,0.48,0.53,5,4.08],[10.0,0.42,0.59,5,5.28],[9.5,0.31,1.62,5,5.13],[11.2,1.115,0.6,4,4.88],[10.4,0.66,0.55,5,4.8],[11.1,0.72,0.72,6,6.37],[9.5,0.57,0.68,5,5.13],[9.5,0.57,0.68,5,5.13],[12.7,0.865,0.49,6,4.16],[9.6,0.55,0.67,5,5.13],[11.5,0.875,0.52,5,4.1],[9.6,0.835,0.47,5,3.79],[9.5,0.45,0.6,5,5.12],[9.3,0.56,0.62,5,5.13],[9.5,0.965,0.5,5,3.41],[9.5,0.965,0.5,5,3.41],[9.3,0.59,0.65,6,5.13],[9.2,0.46,0.56,5,4.23],[9.3,0.69,0.6,5,5.13],[11.5,0.76,0.68,6,6.64],[9.5,0.53,0.57,5,4.48],[9.2,0.615,0.65,5,5.13],[10.0,0.41,0.53,5,4.1],[9.5,0.39,0.51,5,4.07],[9.5,0.51,0.73,6,5.13],[9.0,0.34,0.47,6,4.04],[9.4,0.33,0.48,5,4.04],[9.6,0.5,0.72,6,5.13],[9.5,0.51,0.73,6,5.13],[9.5,0.65,0.55,5,4.29],[9.5,0.65,0.55,5,4.29],[9.4,0.54,0.61,5,5.13],[9.5,0.65,0.55,5,4.29],[9.1,0.48,1.06,6,5.13],[10.7,0.91,0.43,6,4.22],[11.2,0.98,0.46,6,3.83],[9.8,0.87,0.5,5,3.83],[9.8,0.87,0.5,5,3.83],[9.2,0.42,0.52,5,4.02],[9.7,0.58,0.57,5,4.49],[9.6,0.655,0.42,5,4.04],[10.0,0.7,0.53,6,4.1],[9.6,0.655,0.42,5,4.04],[9.5,0.68,0.55,6,4.27],[9.5,0.67,0.54,6,4.21],[9.4,0.59,0.54,5,4.24],[9.5,0.6,0.62,5,5.13],[9.7,0.59,0.53,6,4.16],[9.6,0.72,0.54,5,4.16],[9.7,0.59,0.53,6,4.16],[9.4,0.685,0.55,5,4.26],[9.4,0.57,0.55,5,4.3],[9.5,0.4,0.92,6,5.13],[9.5,0.4,0.91,6,5.13],[10.0,1.0,0.46,5,3.91],[10.3,0.765,0.6,6,4.43],[10.3,0.635,0.59,6,4.85],[10.5,0.43,0.61,5,5.79],[9.8,0.52,0.6,5,5.13],[9.4,0.57,0.6,6,5.13],[9.8,0.46,0.65,5,5.56],[10.0,0.82,0.53,5,4.1],[9.8,0.46,0.65,5,5.56],[9.8,0.59,0.59,5,4.83],[9.5,0.35,0.5,5,4.08],[9.5,0.35,0.5,5,4.08],[10.1,0.56,0.56,6,4.3],[10.1,0.56,0.56,6,4.3],[9.3,0.63,0.52,5,4.13],[9.7,0.37,0.68,6,5.42],[9.6,0.64,0.54,5,4.22],[9.7,0.61,0.6,6,5.13],[10.8,0.6,0.56,5,5.65],[12.5,0.27,0.53,6,8.03],[10.2,0.89,1.18,5,4.16],[9.6,0.46,0.74,5,5.33],[10.8,0.37,0.81,7,6.62],[10.7,0.5,0.52,6,5.28],[10.7,0.5,0.52,6,5.28],[9.4,0.61,0.51,5,4.1],[10.0,0.55,0.44,5,4.1],[12.9,0.585,0.94,7,6.8],[9.6,0.56,0.66,6,5.13],[9.9,0.52,0.57,6,4.42],[12.8,0.28,0.7,7,8.03],[12.5,0.25,0.71,7,8.03],[12.8,0.28,0.7,7,8.03],[9.2,0.53,0.86,5,5.13],[10.3,0.48,0.55,6,4.5],[10.5,0.49,0.47,5,5.13],[10.9,0.5,0.68,6,6.18],[10.8,0.45,0.71,5,6.14],[11.4,0.39,0.58,4,7.33],[11.3,0.41,0.76,6,7.06],[10.8,0.45,0.71,5,6.14],[10.5,0.51,0.58,6,5.13],[11.9,0.29,0.73,6,8.03],[9.4,0.715,0.45,5,3.98],[9.6,0.66,0.54,5,4.21],[9.7,0.685,0.6,5,5.13],[14.0,0.42,0.74,7,7.73],[9.8,0.54,0.64,5,5.13],[9.8,0.54,0.64,5,5.13],[10.3,0.48,0.53,5,4.5],[10.7,0.46,0.49,5,5.58],[11.0,0.27,0.64,7,7.13],[10.7,0.46,0.49,5,5.58],[12.7,0.57,0.74,8,7.5],[11.1,0.61,0.77,6,6.59],[10.9,0.685,0.55,4,5.5],[11.1,0.61,0.77,6,6.59],[9.9,0.44,0.86,3,5.72],[9.9,0.47,0.86,4,5.47],[9.4,0.685,0.47,5,4.0],[9.3,0.665,0.51,5,4.08],[11.7,0.28,0.39,7,8.02],[11.7,0.28,0.39,7,8.02],[11.2,0.31,0.83,7,7.42],[10.0,0.5,0.47,5,4.1],[12.1,0.42,0.77,7,7.73],[10.3,0.66,0.63,5,5.13],[10.9,0.5,0.72,6,6.18],[9.4,0.685,0.62,5,5.13],[10.6,0.25,0.83,6,6.4],[9.8,0.64,0.66,5,5.13],[9.8,0.64,0.66,5,5.13],[9.9,0.68,0.7,6,5.13],[9.8,0.64,0.66,5,5.13],[9.8,0.63,0.66,5,5.13],[9.5,0.43,0.55,5,4.14],[9.5,0.43,0.55,5,4.14],[9.7,0.42,1.07,5,5.13],[10.9,0.36,0.73,6,6.88],[10.9,0.36,0.73,6,6.88],[11.7,0.735,0.71,7,7.05],[10.9,0.36,0.73,6,6.88],[11.3,0.26,0.78,7,7.57],[10.6,0.28,0.67,7,6.4],[11.2,0.56,0.82,6,6.77],[9.5,0.62,0.54,5,4.23],[11.5,1.01,0.6,6,4.88],[10.4,0.42,0.44,5,4.81],[9.7,0.62,0.53,5,4.16],[9.5,0.62,0.54,5,4.23],[9.7,0.635,0.54,5,4.22],[11.3,0.49,0.83,6,6.94],[11.2,0.51,0.84,6,6.77],[11.2,0.56,0.82,6,6.77],[10.9,0.63,0.64,6,6.18],[11.8,0.715,0.57,6,6.42],[10.6,0.56,0.57,5,5.13],[10.0,0.35,0.54,4,4.1],[11.1,0.21,0.58,7,7.05],[11.8,0.38,0.65,7,7.82],[11.8,0.31,0.79,7,8.03],[10.9,0.47,0.58,4,6.2],[11.8,0.715,0.57,6,6.42],[10.0,0.61,0.5,6,4.1],[9.5,0.6,0.55,5,4.3],[9.9,0.56,0.49,5,4.09],[11.4,0.715,0.65,6,6.94],[12.0,0.31,0.78,6,8.03],[9.5,0.6,0.55,5,4.3],[10.0,0.61,0.5,6,4.1],[10.5,0.75,0.64,5,4.56],[10.4,0.8,0.65,6,4.17],[12.1,0.52,0.79,7,7.53],[11.2,0.57,0.56,6,6.02],[9.3,0.9,0.68,5,3.64],[10.1,0.34,0.58,5,4.93],[9.7,0.66,0.57,5,4.48],[9.3,0.45,0.65,6,5.12],[9.7,0.66,0.57,5,4.48],[9.8,0.63,0.58,6,4.62],[10.7,0.59,0.58,6,5.58],[12.5,0.31,0.77,7,8.03],[10.7,0.59,0.58,6,5.58],[12.5,0.31,0.77,7,8.03],[11.0,1.02,0.49,3,3.94],[11.8,0.31,0.69,5,8.03],[10.8,0.635,0.69,7,5.91],[10.8,0.635,0.69,7,5.91],[10.8,0.59,0.59,7,5.91],[10.8,0.59,0.59,7,5.91],[9.5,0.58,0.59,5,4.86],[11.0,0.54,0.71,5,6.4],[11.5,0.56,0.54,6,6.2],[10.8,0.52,0.59,6,5.91],[11.5,0.305,0.52,6,7.66],[13.2,0.38,0.57,6,7.82],[10.9,0.28,0.6,6,7.12],[12.2,0.46,0.62,6,7.37],[12.2,0.395,0.64,7,7.71],[11.5,0.305,0.52,6,7.66],[11.9,0.315,0.67,6,8.03],[11.0,0.715,0.61,5,6.23],[10.1,0.41,0.64,6,5.82],[11.0,0.36,0.72,6,7.03],[11.8,0.62,0.89,6,7.38],[10.5,0.41,0.56,5,5.33],[11.0,0.36,0.72,6,7.03],[11.8,0.62,0.89,6,7.38],[10.1,0.41,0.64,6,5.82],[11.2,0.47,0.8,5,6.77],[11.0,0.22,0.87,7,7.13],[10.2,0.24,0.9,6,5.91],[9.2,0.67,0.59,4,4.84],[11.2,0.47,0.8,5,6.77],[12.0,0.33,0.73,7,8.03],[10.5,0.61,0.73,5,5.13],[9.8,0.61,0.65,5,5.13],[9.5,0.4,0.59,6,4.82],[9.8,0.61,0.65,5,5.13],[10.5,0.61,0.73,5,5.13],[11.8,0.3,0.72,6,8.03],[11.8,0.3,0.72,6,8.03],[10.4,0.63,0.6,4,5.13],[12.9,0.38,0.72,7,7.88],[11.4,0.46,0.54,5,6.68],[12.4,0.33,0.76,7,8.03],[12.5,0.27,0.52,7,8.03],[10.0,0.43,0.64,7,5.72],[9.7,0.5,0.6,7,5.13],[12.1,0.3,0.64,7,8.03],[11.1,0.44,0.79,7,6.66],[12.0,0.44,0.99,7,6.58],[12.4,0.28,0.62,7,8.03],[11.9,0.12,0.76,7,8.03],[11.9,0.12,0.76,7,8.03],[11.9,0.12,0.76,7,8.03],[12.4,0.28,0.62,7,8.03],[11.2,0.31,0.68,7,7.42],[12.1,0.34,0.69,7,8.03],[12.2,0.43,0.54,6,7.41],[10.4,0.21,0.67,5,6.2],[11.3,0.36,0.62,6,7.46],[11.1,0.37,0.58,6,7.05],[11.3,0.57,0.71,7,6.94],[10.0,0.59,0.61,5,5.12],[11.1,0.47,0.85,6,6.59],[9.3,0.56,0.62,5,5.13],[9.5,0.57,0.69,5,5.13],[11.2,0.27,0.69,6,7.42],[11.1,0.47,0.85,6,6.59],[11.0,0.34,0.86,6,7.13],[11.9,0.38,0.58,7,7.82],[9.2,0.66,0.48,5,4.02],[12.2,0.4,0.6,6,7.67],[10.2,0.56,0.61,5,5.13],[10.9,0.26,0.87,6,6.98],[10.9,0.26,0.87,6,6.98],[11.6,0.38,0.65,7,7.82],[10.7,0.34,0.63,5,6.65],[12.1,0.33,0.62,7,8.03],[9.4,0.41,0.52,5,4.06],[9.4,0.41,0.52,5,4.06],[9.1,0.59,0.5,5,4.08],[11.3,0.4,0.49,7,7.06],[10.4,0.45,0.63,5,5.65],[10.5,0.5,0.71,6,5.13],[10.0,0.86,0.62,5,3.84],[12.9,0.52,0.82,6,7.53],[10.5,0.5,0.71,6,5.13],[10.4,0.45,0.63,5,5.65],[11.3,0.58,0.58,6,6.47],[11.4,0.34,0.55,7,7.37],[9.4,0.36,0.5,5,4.08],[9.4,0.39,0.49,5,4.02],[10.9,0.295,0.51,6,6.15],[9.4,0.39,0.49,5,4.02],[9.4,0.34,0.48,5,4.04],[9.4,0.4,0.48,6,3.99],[9.4,0.34,0.48,5,4.04],[9.4,0.35,0.43,5,4.04],[10.1,0.6,0.62,6,5.13],[12.8,0.66,0.63,7,7.32],[12.8,0.66,0.63,7,7.32],[9.1,0.84,0.48,6,3.76],[12.9,0.69,0.53,6,6.4],[11.5,0.43,0.72,7,7.42],[10.6,0.35,0.82,7,6.4],[11.7,0.29,0.84,7,8.02],[12.8,0.36,0.55,7,7.96],[10.3,0.43,0.54,5,4.46],[12.8,0.36,0.55,7,7.96],[11.7,0.29,0.84,7,8.02],[11.7,0.3,0.84,7,8.02],[12.0,0.35,0.7,7,8.03],[10.9,0.5,0.68,5,6.18],[12.3,0.28,0.55,7,8.03],[10.4,0.32,0.55,6,4.67],[10.0,1.005,0.48,5,3.91],[10.0,0.71,0.58,6,4.54],[11.2,0.58,0.58,6,6.37],[11.4,0.39,0.84,6,7.33],[12.6,0.38,0.75,7,7.88],[12.7,0.18,0.44,6,8.03],[12.7,0.18,0.44,6,8.03],[10.4,0.5,0.61,5,5.13],[11.9,0.36,0.53,6,7.96],[11.9,0.36,0.53,6,7.96],[10.5,0.51,0.54,5,5.13],[12.3,0.32,0.55,6,8.03],[10.5,0.58,0.56,7,5.13],[10.4,0.83,0.6,6,4.0],[12.6,0.31,0.56,6,8.03],[11.6,0.795,0.52,5,4.77],[10.1,0.34,0.54,6,4.18],[10.5,0.58,0.56,7,5.13],[11.5,0.59,0.55,7,6.2],[11.0,0.55,0.58,7,6.21],[9.6,0.82,0.53,5,3.93],[10.4,0.57,0.59,6,4.86],[9.7,0.745,0.47,6,3.99],[10.6,0.37,0.65,7,6.21],[12.5,0.31,0.59,7,8.03],[9.2,0.91,0.56,5,3.6],[12.6,0.41,0.77,7,7.76],[11.1,0.5,0.83,6,6.59],[10.2,0.965,0.67,5,3.41],[9.8,0.49,0.64,6,5.26],[11.1,0.5,0.83,6,6.59],[10.9,0.39,0.81,7,6.64],[12.2,0.39,0.62,6,7.75],[11.4,0.44,0.58,6,6.92],[10.7,0.78,0.62,6,4.81],[10.4,0.43,0.64,5,5.8],[10.9,0.49,0.78,6,6.19],[10.8,0.5,0.77,6,5.94],[10.4,0.43,0.64,5,5.8],[9.2,0.46,1.34,5,5.13],[12.9,0.605,0.55,5,6.4],[12.7,0.33,0.77,7,8.03],[9.1,0.64,0.62,6,5.13],[9.1,0.64,0.62,6,5.13],[12.1,0.48,0.59,7,7.09],[9.1,0.42,0.57,5,4.39],[11.6,0.53,0.76,7,7.44],[12.1,0.48,0.59,7,7.09],[9.9,0.23,0.7,6,5.63],[12.5,0.4,0.69,8,7.8],[11.4,0.38,0.64,6,7.41],[11.8,0.29,0.63,6,8.03],[11.8,0.74,0.57,6,5.96],[10.2,0.61,0.6,6,5.13],[12.5,0.52,0.72,7,7.53],[10.9,0.31,0.83,7,6.98],[10.9,0.31,0.83,7,6.98],[10.8,0.62,0.62,5,5.91],[11.1,0.33,0.89,7,7.28],[9.2,0.77,0.58,5,4.39],[9.5,0.35,0.58,6,4.66],[10.7,0.62,0.58,6,5.58],[9.2,0.77,0.58,5,4.39],[10.2,0.25,0.86,7,5.92],[11.4,0.32,0.73,6,7.71],[11.0,0.37,0.58,5,6.93],[11.0,0.37,0.58,5,6.93],[12.3,0.3,0.51,7,8.03],[11.8,0.27,0.51,6,8.03],[12.3,0.3,0.51,7,8.03],[9.5,0.38,0.59,6,4.85],[12.0,0.42,0.77,6,7.73],[9.5,0.38,0.59,6,4.85],[9.6,0.48,0.49,5,3.97],[11.6,0.34,0.66,7,8.0],[11.2,0.19,0.69,6,7.42],[9.9,0.41,0.76,7,5.63],[9.9,0.41,0.76,7,5.63],[11.8,0.26,0.63,8,8.03],[11.4,0.34,0.6,6,7.71],[11.5,0.54,0.59,6,6.85],[12.0,0.31,0.86,7,8.03],[10.8,0.725,0.49,6,5.11],[10.5,0.4,0.5,5,5.13],[10.8,0.725,0.49,6,5.11],[9.4,0.52,0.52,5,4.11],[12.5,0.31,0.81,7,8.03],[9.4,0.52,0.52,5,4.11],[12.4,0.34,0.78,6,8.03],[12.0,0.49,0.63,6,7.37],[11.2,0.48,0.54,6,6.16],[12.0,0.49,0.63,6,7.37],[12.4,0.48,0.66,6,7.51],[12.8,0.57,0.6,5,7.1],[12.3,0.23,0.54,6,8.03],[11.7,0.3,0.85,7,8.02],[9.5,0.78,0.49,5,3.9],[10.8,0.47,0.76,6,6.03],[10.0,0.53,0.64,6,5.12],[12.3,0.42,0.64,7,7.6],[11.0,0.33,0.71,6,7.13],[9.5,0.24,0.59,6,4.86],[13.6,0.4,0.66,6,7.75],[11.3,0.69,0.6,6,6.72],[11.3,0.69,0.6,6,6.72],[11.3,0.69,0.6,6,6.72],[13.3,0.39,0.53,6,7.75],[12.9,0.66,0.58,5,6.91],[13.1,0.54,0.72,8,7.51],[12.3,0.5,0.55,6,6.4],[12.3,0.47,0.48,6,6.94],[11.2,0.4,0.65,6,6.99],[11.5,0.58,0.62,4,7.11],[11.3,0.24,0.59,7,7.37],[13.5,0.29,0.54,6,8.03],[11.5,0.76,0.6,6,6.17],[10.0,0.43,0.68,5,5.72],[10.5,0.43,0.69,6,5.8],[10.4,0.6,0.63,6,5.13],[9.5,0.19,0.44,5,4.04],[13.6,0.36,0.88,7,7.96],[11.2,0.48,0.68,7,6.77],[11.8,0.28,0.74,7,8.03],[11.9,0.25,0.6,6,8.03],[11.4,0.52,0.76,6,7.1],[11.4,0.52,0.76,6,7.1],[9.1,0.41,0.58,5,4.58],[9.5,0.51,0.64,6,5.13],[9.5,0.4,0.65,6,5.13],[11.0,0.38,0.85,6,6.86],[11.4,0.45,0.65,6,7.17],[10.0,0.22,0.82,6,5.72],[10.1,0.32,0.62,5,5.79],[10.4,0.2,0.81,6,6.2],[9.8,0.5,0.87,6,5.13],[11.8,0.41,0.49,7,7.59],[11.6,0.39,0.66,6,7.79],[12.0,0.35,0.52,6,8.03],[12.8,0.33,0.76,7,8.03],[12.5,0.58,0.65,6,7.39],[9.8,0.6,0.53,5,4.14],[11.1,0.42,0.66,6,6.74],[11.4,0.58,0.68,6,7.1],[9.8,0.6,0.53,5,4.14],[11.8,0.18,0.76,7,8.03],[12.9,0.51,0.87,7,7.48],[10.6,0.41,1.16,6,5.13],[10.8,0.41,0.67,5,6.36],[11.1,0.36,0.72,7,7.18],[10.2,0.45,0.75,6,5.65],[11.8,0.32,0.71,7,8.03],[10.0,0.785,0.67,5,4.28],[10.0,0.785,0.67,5,4.28],[9.4,0.44,1.1,5,5.13],[10.2,0.54,0.98,5,5.13],[12.4,0.33,0.88,7,8.03],[12.0,0.34,0.56,6,8.03],[11.5,0.5,0.62,6,7.13],[10.5,0.36,0.67,6,6.3],[10.8,0.59,0.68,6,5.91],[12.3,0.42,0.74,6,7.73],[9.5,0.36,0.62,6,5.13],[9.5,0.36,0.62,6,5.13],[11.5,0.61,0.7,6,7.27],[11.2,0.88,0.5,4,4.24],[12.7,0.66,0.66,7,7.45],[11.4,0.915,0.73,5,5.61],[11.0,0.35,0.81,6,7.13],[11.0,0.35,0.81,6,7.13],[11.4,0.39,0.46,5,7.32],[10.5,0.4,0.86,6,6.0],[9.3,0.66,0.6,5,5.13],[10.9,0.64,0.7,5,6.18],[11.9,0.43,0.46,6,7.41],[12.2,0.8,0.5,5,4.72],[11.9,0.43,0.46,6,7.41],[10.9,0.64,0.7,5,6.18],[9.6,0.955,0.44,4,3.55],[12.5,0.4,0.57,6,7.67],[10.8,0.885,0.51,5,4.34],[12.4,0.25,0.8,7,8.03],[10.8,0.885,0.51,5,4.34],[9.5,0.745,0.59,6,4.6],[9.5,0.43,0.6,6,5.12],[9.5,0.58,0.58,6,4.66],[9.8,0.57,0.54,6,4.19],[10.9,0.26,0.79,6,6.98],[9.5,0.58,0.58,6,4.66],[9.8,0.57,0.54,6,4.19],[11.2,0.34,0.54,7,6.87],[11.7,0.42,0.69,8,7.7],[9.4,0.74,0.55,5,4.2],[11.0,0.36,0.85,7,7.03],[11.0,0.36,0.85,7,7.03],[11.0,0.36,0.85,7,7.03],[10.0,0.72,0.94,5,4.83],[11.0,0.36,0.85,7,7.03],[11.2,0.39,0.87,7,7.06],[10.4,0.65,0.62,6,5.13],[9.3,0.44,0.62,5,5.12],[10.4,0.65,0.62,6,5.13],[10.5,0.38,0.75,6,6.14],[10.4,0.33,0.48,6,4.81],[11.3,0.27,0.56,6,7.09],[9.5,0.57,0.69,6,5.13],[12.0,0.34,0.81,6,8.03],[10.6,0.4,0.69,6,6.0],[10.9,0.39,0.83,6,6.64],[11.5,0.32,0.77,6,7.85],[11.5,0.32,0.77,6,7.85],[9.6,0.53,0.46,6,4.04],[12.0,0.36,0.76,6,7.98],[10.3,0.39,0.82,6,6.04],[9.4,0.46,0.51,5,3.96],[9.2,0.58,0.47,5,4.04],[9.6,0.58,0.72,5,5.13],[13.6,0.42,0.73,7,7.73],[9.5,0.43,0.64,5,5.12],[11.8,0.18,0.78,6,8.03],[10.8,0.815,0.62,5,4.96],[9.5,0.43,0.64,5,5.12],[9.3,0.23,0.49,4,4.06],[12.8,0.75,0.4,6,5.32],[11.5,0.33,0.56,4,7.63],[9.4,0.55,0.64,6,5.13],[12.8,0.75,0.4,6,5.32],[9.6,0.73,0.46,4,3.98],[11.8,0.67,0.56,4,6.61],[9.3,0.61,0.4,5,4.04],[9.8,0.37,0.59,5,5.26],[12.2,0.4,0.6,6,7.67],[9.5,0.56,0.62,5,5.13],[10.3,0.29,0.54,6,4.46],[10.5,0.55,0.68,5,5.13],[10.0,0.74,0.48,5,4.1],[10.5,0.55,0.68,5,5.13],[11.1,0.41,0.75,6,6.8],[10.9,0.6,0.61,6,6.18],[10.9,0.6,0.61,6,6.18],[9.8,0.58,0.59,5,4.83],[9.8,0.72,0.58,5,4.59],[9.5,0.66,0.58,5,4.64],[10.9,0.7,0.69,5,6.18],[11.0,0.64,0.45,5,5.6],[9.2,0.59,0.42,5,4.04],[11.0,0.58,0.7,6,6.4],[11.3,0.64,0.63,6,6.94],[11.3,0.64,0.63,6,6.94],[9.3,0.635,1.15,5,5.13],[11.2,1.02,0.55,4,3.82],[9.8,0.45,0.58,5,4.94],[9.6,0.78,0.46,4,3.91],[11.8,0.37,0.72,6,7.93],[10.3,0.57,0.6,6,5.13],[10.3,0.57,0.6,6,5.13],[11.4,0.43,0.87,6,7.21],[9.5,0.41,0.55,6,4.22],[14.0,0.49,0.82,8,7.56],[14.0,0.38,0.75,6,7.88],[11.7,0.44,0.57,6,7.31],[11.2,0.46,0.53,5,6.44],[9.3,0.58,0.43,5,4.04],[11.2,0.58,0.53,6,5.8],[9.5,0.715,0.54,6,4.17],[12.0,0.4,0.56,4,7.67],[9.7,0.69,0.6,6,5.13],[9.5,0.715,0.54,6,4.17],[11.5,0.3,0.57,7,7.63],[10.4,0.46,0.64,6,5.56],[10.4,0.46,0.64,6,5.56],[10.9,0.765,0.68,6,5.57],[10.2,0.63,0.63,6,5.13],[10.9,0.42,0.56,5,6.44],[10.5,0.37,0.57,5,5.56],[12.4,0.16,0.54,6,8.03],[13.0,0.6,0.37,5,6.4],[10.2,0.6,1.17,5,5.13],[10.2,0.6,1.17,5,5.13],[11.0,0.74,0.59,5,5.93],[10.9,0.635,0.75,6,6.18],[12.4,0.395,0.67,6,7.8],[9.7,0.755,0.49,4,3.97],[10.9,0.635,0.75,6,6.18],[9.5,0.63,0.45,5,4.04],[9.5,0.63,0.45,5,4.04],[12.1,0.53,0.61,6,7.2],[12.2,0.6,0.56,6,6.6],[10.9,1.58,0.4,3,3.98],[12.5,0.645,0.61,6,7.19],[11.7,0.86,0.74,6,6.14],[11.2,0.37,0.8,6,7.23],[11.2,0.28,0.66,5,7.42],[9.2,0.79,0.44,5,3.87],[9.8,0.61,0.53,5,4.14],[10.1,0.69,0.62,5,5.13],[11.1,0.68,0.52,4,5.7],[10.1,0.69,0.62,5,5.13],[9.2,0.62,0.61,5,5.13],[9.8,0.61,0.53,5,4.14],[12.8,0.51,0.59,6,7.05],[10.5,1.18,0.47,5,4.04],[10.1,0.36,0.54,6,4.18],[10.1,0.36,0.53,6,4.22],[9.8,0.63,0.58,6,4.62],[12.5,0.74,0.59,6,6.3],[11.9,0.44,0.69,6,7.67],[9.8,0.63,0.58,6,4.62],[9.1,0.76,1.33,6,4.59],[10.1,0.66,0.66,5,5.13],[12.5,0.74,0.59,6,6.3],[11.4,0.34,0.55,5,7.37],[11.0,0.36,0.82,7,7.03],[10.6,0.46,0.6,6,5.56],[10.6,0.46,0.6,6,5.56],[10.6,0.46,0.6,6,5.56],[10.6,0.46,0.6,6,5.56],[9.3,0.52,0.52,5,4.11],[9.8,0.6,0.56,6,4.34],[9.8,0.6,0.56,6,4.34],[9.2,0.87,0.46,5,3.68],[9.7,0.39,0.43,6,4.05],[9.6,0.775,0.51,5,3.96],[10.0,0.835,0.52,5,4.1],[12.6,0.58,0.66,6,7.43],[9.5,0.5,0.45,5,3.98],[9.5,0.5,0.45,5,3.98],[9.5,0.5,0.45,5,3.98],[10.5,0.51,0.54,6,5.13],[10.5,0.51,0.54,6,5.13],[10.5,0.51,0.54,6,5.13],[10.4,0.54,0.51,6,4.8],[10.5,0.51,0.54,6,5.13],[11.0,0.42,0.53,5,6.4],[10.2,0.44,0.53,6,4.34],[11.4,0.59,0.56,5,6.26],[9.5,0.655,0.39,5,4.02],[9.5,0.655,0.39,5,4.02],[10.8,0.57,0.52,5,5.39],[10.0,0.6,0.57,5,4.37],[11.8,0.62,0.51,6,6.4],[10.3,0.645,0.46,5,4.57],[10.3,0.645,0.46,5,4.57],[10.0,0.58,0.52,5,4.1],[10.1,0.32,0.44,5,4.23],[10.1,0.34,0.44,5,4.23],[11.1,0.43,0.59,6,6.71],[9.5,0.64,0.5,5,4.07],[10.0333333333333,0.475,0.65,6,5.42],[10.9,0.54,0.56,5,5.74],[10.1,0.85,0.54,5,4.1],[10.0333333333333,0.475,0.65,6,5.42],[9.8,0.83,0.48,4,3.85],[11.8,0.605,0.53,6,6.4],[9.5,0.5,0.62,5,5.13],[9.8,0.74,0.5,5,4.03],[10.5,0.54,1.18,6,5.13],[9.8,0.77,0.5,6,3.98],[10.4,0.61,0.37,4,4.81],[9.2,0.78,1.17,5,4.48],[11.6,0.58,1.03,6,5.76],[9.2,0.78,1.17,5,4.48],[9.3,0.75,0.45,5,3.94],[9.8,0.815,0.51,3,3.89],[9.9,0.56,0.52,5,4.09],[10.0,0.885,0.46,5,4.03],[12.2,0.49,0.62,6,7.31],[9.9,0.45,0.51,6,3.99],[10.8,0.57,0.62,6,5.91],[10.8,0.57,0.62,6,5.91],[9.6,0.83,0.45,5,3.8],[9.9,0.6,0.49,5,4.09],[9.9,0.6,0.49,5,4.09],[9.5,0.755,0.5,5,3.96],[9.2,0.81,0.42,5,3.83],[9.6,0.64,0.58,5,4.64],[9.6,0.64,0.58,5,4.64],[10.3,0.64,0.68,5,5.13],[9.7,0.48,0.53,5,4.08],[12.5,0.49,0.59,6,7.07],[11.0,0.64,0.58,5,6.21],[9.8,0.62,0.48,5,4.08],[10.2,0.52,0.48,5,4.39],[9.2,0.57,0.48,5,4.04],[9.55,0.685,0.65,6,5.13],[9.55,0.675,0.65,5,5.13],[9.9,0.59,0.52,5,4.09],[10.2,0.6,0.62,7,5.13],[11.1,0.67,0.72,6,6.59],[9.9,0.69,0.51,5,4.09],[9.9,0.69,0.51,5,4.09],[11.9,0.3,0.82,6,8.03],[10.0,0.33,1.1,8,5.13],[10.7,0.5,0.62,6,5.61],[11.3,0.28,0.9,7,7.57],[10.9,0.24,0.94,6,6.63],[10.7,0.51,0.93,6,5.6],[12.4,0.29,1.01,7,7.12],[10.7,0.51,0.93,6,5.6],[11.9,0.96,0.44,6,3.41],[10.6,0.47,0.73,6,5.47],[10.9,0.24,0.94,6,6.63],[10.1,0.57,0.9,5,5.13],[9.6,0.32,0.78,5,5.29],[9.4,0.58,0.84,5,5.13],[9.6,0.32,0.78,5,5.29],[12.1,0.34,0.77,7,8.03],[9.8,0.53,0.46,5,4.08],[9.9,0.64,0.45,5,4.09],[9.8,0.53,0.46,5,4.08],[9.4,0.4,0.58,5,4.61],[11.4,0.54,0.84,6,7.1],[11.0,0.53,0.67,4,6.4],[9.6,0.26,0.7,6,5.29],[9.6,0.26,0.7,6,5.29],[12.1,0.23,0.71,6,8.03],[11.2,0.41,0.58,5,6.97],[11.0,0.64,0.63,5,6.4],[11.3,0.18,0.93,5,7.24],[10.4,0.41,0.62,5,5.91],[9.9,0.43,0.54,6,4.07],[11.7,0.44,0.85,6,7.64],[10.1,0.4,0.74,7,5.82],[9.0,0.54,0.77,6,5.13],[9.0,0.54,0.77,6,5.13],[8.5,0.38,0.65,5,5.13],[11.1,0.915,0.54,5,4.1],[10.3,0.59,0.47,5,4.57],[11.0666666666667,0.67,0.68,6,6.53],[11.3,0.37,0.73,7,7.36],[9.56666666666667,0.785,0.52,6,3.97],[9.8,0.63,0.75,5,5.13],[11.7,0.58,0.49,5,6.4],[11.1,0.67,0.68,6,6.59],[9.6,0.785,0.52,6,3.97],[9.8,0.63,0.75,5,5.13],[9.7,0.67,0.74,5,5.13],[9.7,0.58,0.73,5,5.13],[11.3,0.38,0.76,8,7.28],[11.3,0.37,0.73,7,7.36],[11.0,0.32,0.78,7,7.13],[11.6,0.58,0.76,7,7.43],[9.0,0.49,0.58,5,4.59],[10.9,0.45,0.69,6,6.33],[10.9,0.9,0.63,6,4.8],[10.55,0.54,0.5,6,5.13],[9.0,0.49,0.58,5,4.59],[10.5,0.29,0.6,5,6.4],[11.9,0.2,0.8,7,8.03],[10.4,0.42,0.68,6,5.87],[10.0,0.785,0.61,4,4.28],[10.4,0.64,0.58,6,4.8],[10.8,0.63,0.53,6,5.39],[9.7,0.59,0.67,5,5.13],[9.7,0.59,0.67,5,5.13],[10.0,0.48,0.65,7,5.38],[11.0,1.04,0.57,4,4.33],[10.0,0.48,0.65,7,5.38],[9.7,0.98,0.55,3,3.67],[9.7,0.69,0.47,5,4.04],[12.6,0.7,0.52,5,6.4],[11.1,0.35,0.79,6,7.28],[11.0,0.6,0.54,5,5.6],[8.8,0.5,0.75,5,5.13],[13.5666666666667,0.47,0.88,7,7.51],[8.8,0.5,0.75,5,5.13],[13.6,0.47,0.88,7,7.51],[10.2,0.875,0.52,3,4.12],[10.6,0.28,0.68,5,6.4],[10.1,0.62,0.62,4,5.13],[10.6,0.28,0.68,5,6.4],[10.3,0.58,0.57,4,4.57],[10.7,0.33,0.61,5,6.69],[10.9,0.91,0.64,4,4.75],[9.7,0.655,0.55,5,4.28],[10.3,0.68,0.6,5,5.13],[10.6,0.64,0.78,5,5.13],[11.4,0.54,0.58,5,6.59],[10.8,0.57,0.76,6,5.91],[12.4,0.22,0.56,6,8.03],[11.4,0.54,0.58,5,6.59],[11.95,0.65,0.54,5,6.4],[9.7,0.54,0.59,5,4.85],[10.0,0.31,0.7,7,5.72],[10.6,0.43,0.81,6,5.8],[9.7,0.54,0.59,5,4.85],[11.5,0.74,0.63,6,6.72],[10.8,0.895,0.58,6,4.57],[11.5,0.74,0.63,6,6.72],[9.6,0.725,0.53,5,4.1],[9.4,0.82,0.53,5,3.93],[9.8,0.585,0.54,5,4.19],[11.0,0.44,0.69,6,6.53],[11.4,0.38,0.55,6,7.33],[9.95,0.76,0.63,3,4.47],[10.8,0.81,0.66,6,4.99],[11.4,0.38,0.55,6,7.33],[10.6,0.27,0.72,6,6.4],[11.1,0.18,0.7,5,7.28],[9.7,0.36,0.77,6,5.42],[9.8,0.69,0.67,5,5.13],[10.4,0.79,0.65,6,4.24],[10.5,0.56,0.6,6,5.13],[9.23333333333333,0.84,0.72,6,3.94],[9.25,0.84,0.72,6,3.94],[10.6,0.32,0.97,5,5.55],[10.3,0.53,0.83,6,5.13],[10.5,0.47,0.63,5,5.47],[10.2,0.7,0.58,5,4.61],[10.3,0.53,0.83,6,5.13],[9.05,0.48,0.43,4,3.95],[10.6,0.32,0.97,5,5.55],[10.4,0.48,0.6,5,5.37],[10.0,0.42,0.78,6,5.72],[9.7,0.48,0.64,5,5.37],[9.6,0.47,0.65,6,5.33],[10.8,0.53,0.66,6,5.91],[10.1,0.29,0.67,6,5.82],[10.2,0.69,0.6,6,5.13],[11.3,0.44,0.69,6,6.99],[10.2,0.705,0.66,5,5.06],[9.9,0.53,0.68,6,5.13],[9.0,0.39,0.61,5,5.13],[11.7,0.56,0.62,7,7.24],[9.7,0.55,0.59,6,4.85],[10.3,0.53,0.68,6,5.13],[10.2,0.58,0.64,6,5.13],[12.0,0.64,0.63,5,7.31],[9.9,0.39,0.78,5,5.63],[11.6,0.52,0.63,6,7.33],[10.9,0.25,0.76,7,6.98],[10.75,0.855,0.56,6,4.45],[10.4,0.44,0.57,6,5.01],[11.2,0.37,0.81,7,7.23],[10.1,0.63,0.64,6,5.13],[10.2,0.57,0.61,5,5.13],[12.1,0.6,0.51,5,6.4],[10.4,0.4,0.58,5,5.14],[11.4,0.36,0.7,8,7.6],[9.5,0.68,0.53,5,4.14],[9.4,0.67,0.54,5,4.21],[11.3,0.68,0.66,6,6.94],[9.4,0.735,0.6,5,4.7],[11.0,0.855,0.6,6,5.26],[10.55,0.56,0.68,7,5.13],[9.9,0.88,0.56,5,3.9],[11.0,0.855,0.6,6,5.26],[9.5,0.63,0.56,5,4.38],[9.9,0.6,0.52,5,4.09],[9.9,0.6,0.52,5,4.09],[9.9,0.6,0.52,5,4.09],[10.1,0.695,0.54,5,4.23],[10.1,0.695,0.54,5,4.23],[10.1,0.695,0.54,5,4.23],[10.9,0.67,0.82,6,6.18],[11.2,0.16,0.71,6,7.42],[10.1,0.695,0.54,5,4.23],[9.2,0.56,0.59,5,4.86],[11.5,0.51,0.57,6,6.59],[12.4,0.36,0.93,6,7.59],[11.1,0.38,0.65,6,7.0],[9.5,0.69,0.51,5,4.06],[12.5,0.58,0.67,6,7.47],[10.5,0.31,0.48,6,5.13],[11.8,0.52,0.64,6,7.38],[10.8,0.3,0.78,6,6.81],[11.9,0.7,0.6,6,7.14],[11.3,0.67,0.67,6,6.94],[11.3,0.56,0.6,5,6.72],[11.9,0.35,0.6,6,8.03],[11.3,0.56,0.6,5,6.72],[11.9,0.715,0.5,5,5.98],[9.8,0.46,0.62,5,5.56],[11.6,0.32,0.8,7,8.0],[11.5,0.39,0.84,6,7.55],[11.4,0.31,0.85,6,7.71],[10.9,0.61,0.66,6,6.18],[12.8,0.66,0.78,6,7.52],[9.2,0.725,0.54,5,4.15],[11.6,0.55,0.82,6,7.43],[11.6,0.74,0.56,6,5.74],[11.0,0.51,0.75,6,6.4],[9.5,0.62,0.82,6,5.13],[10.5,0.6,0.58,5,5.13],[11.2,0.55,0.76,6,6.77],[11.0,0.51,0.75,6,6.4],[10.2,0.645,0.71,5,5.13],[11.0,0.31,0.66,6,7.13]],"check":[[10.5,0.4,0.7,6.0014],[12.5,0.3,0.75,8.0332],[9.2,1.0,0.5,3.4048],[11,0.6,0.65,6.3988],[9.8,0.5,1.3,5.1333]],"stats":{"spearman":0.553,"auc_premium":0.852}};
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const NS = "http://www.w3.org/2000/svg";
+const fmt = (v, d=2) => v.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function el(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function clear(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+
+/* ---------- motor fuzzy (espelha fuzzy_vinho.py) ---------- */
+function trap(x,[a,b,c,d]){
+  const up = b>a ? (x-a)/(b-a) : (x>=a?1:0);
+  const dn = d>c ? (d-x)/(d-c) : (x<=d?1:0);
+  return Math.max(0, Math.min(Math.min(up,1), dn, 1));
+}
+const Y = Array.from({length:501},(_,i)=>i*10/500);
+const OUT_TERMS = Object.keys(M.saida.termos);
+const MF_OUT = Object.fromEntries(OUT_TERMS.map(t=>[t, Y.map(y=>trap(y,M.saida.termos[t]))]));
+const VKEYS = ["alcool","acidez","sulfatos"];
+function inferir(inp){
+  const mu = {};
+  for(const v of VKEYS){ mu[v]={}; for(const [t,p] of Object.entries(M.vars[v].termos)) mu[v][t]=trap(inp[v],p); }
+  const w = M.regras.map(([ant])=>Math.min(...Object.entries(ant).map(([v,t])=>mu[v][t])));
+  const agg = Y.map((_,i)=>Math.max(0,...M.regras.map(([,c],r)=>Math.min(w[r], MF_OUT[c][i]))));
+  let s=0, sy=0; agg.forEach((m,i)=>{s+=m; sy+=m*Y[i];});
+  return {mu, w, agg, y: s===0 ? 5 : sy/s};
+}
+const indiceRapido = (a,v,s) => inferir({alcool:a,acidez:v,sulfatos:s}).y;
+
+/* ---------- utilidades de cor e tooltip ---------- */
+const TERM_COLOR = ["--s1","--s2","--s3","--s4"];
+const tip = $("#tip");
+function showTip(html, ev){ tip.innerHTML=html; tip.style.opacity=1; const x=Math.min(ev.clientX+14, innerWidth-tip.offsetWidth-8); tip.style.left=x+"px"; tip.style.top=(ev.clientY+14)+"px"; }
+function hideTip(){ tip.style.opacity=0; }
+function hexToRgb(h){ h=h.replace("#",""); return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)); }
+function seqColor(t){ const a=hexToRgb(css("--seq-0")), b=hexToRgb(css("--seq-1")); t=Math.max(0,Math.min(1,t)); return `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*t)).join(",")})`; }
+const decisionColor = d => d==="Premium" ? "var(--premium)" : d==="Revisar" ? "var(--revisar)" : "var(--padrao)";
+
+/* ---------- barra de progresso ---------- */
+addEventListener("scroll",()=>{ const h=document.documentElement; $("#progress").style.width=(100*h.scrollTop/(h.scrollHeight-h.clientHeight))+"%"; },{passive:true});
+
+/* ---------- Figura 1: nítido x fuzzy ---------- */
+(function(){
+  const svg=$("#fig-crisp"), W=640,H=230, L=46,R=20,T=16,B=36, x0=8.5,x1=14.5;
+  const sx=x=>L+(x-x0)/(x1-x0)*(W-L-R), sy=y=>T+(1-y)*(H-T-B);
+  const P=M.vars.alcool.termos.alto;
+  const fuzzy = x=>trap(x,P), crisp = x=> x>=11.5?1:0;
+  const slider=$("#crisp-x");
+  function draw(){
+    clear(svg); const x=+slider.value;
+    for(const g of [0,.5,1]){ el("line",{x1:L,x2:W-R,y1:sy(g),y2:sy(g),class:"grid"},svg); el("text",{x:L-8,y:sy(g)+4,"text-anchor":"end",class:"tick"},svg).textContent=fmt(g,1); }
+    for(let t=9;t<=14;t++){ el("text",{x:sx(t),y:H-B+18,"text-anchor":"middle",class:"tick"},svg).textContent=t+" %"; }
+    el("text",{x:12,y:T+ (H-T-B)/2,transform:`rotate(-90 12 ${T+(H-T-B)/2})`,"text-anchor":"middle",class:"tick"},svg).textContent="pertinência";
+    // crisp
+    el("path",{d:`M${sx(x0)},${sy(0)}H${sx(11.5)}V${sy(1)}H${sx(x1)}`,fill:"none",stroke:"var(--s2)","stroke-width":2.5},svg);
+    // fuzzy
+    let d=""; for(let i=0;i<=120;i++){ const xx=x0+(x1-x0)*i/120; d+=(i?"L":"M")+sx(xx)+","+sy(fuzzy(xx)); }
+    el("path",{d,fill:"none",stroke:"var(--s1)","stroke-width":2.5},svg);
+    el("text",{x:sx(13.6),y:sy(1)-6,"text-anchor":"middle",style:"font-size:12px;fill:var(--ink-2)"},svg).textContent="ambos = 1";
+    el("text",{x:sx(11.5)+6,y:sy(0.12),style:"font-size:12px;fill:var(--s2);font-weight:600"},svg).textContent="nítido";
+    el("text",{x:sx(11.0)-8,y:sy(0.5),"text-anchor":"end",style:"font-size:12px;fill:var(--s1);font-weight:600"},svg).textContent="fuzzy";
+    // marcador
+    el("line",{x1:sx(x),x2:sx(x),y1:sy(0),y2:sy(1.04),stroke:"var(--ink)","stroke-dasharray":"3 3"},svg);
+    el("circle",{cx:sx(x),cy:sy(crisp(x)),r:6,fill:"var(--s2)",stroke:"var(--surface)","stroke-width":2},svg);
+    el("circle",{cx:sx(x),cy:sy(fuzzy(x)),r:6,fill:"var(--s1)",stroke:"var(--surface)","stroke-width":2},svg);
+    $("#crisp-x-out").textContent=fmt(x,2)+" %";
+    $("#crisp-read").innerHTML=`nítido: <b>${crisp(x)}</b> · fuzzy: <b>${fmt(fuzzy(x),2)}</b>`;
+  }
+  slider.addEventListener("input",()=>{ stop(); draw(); });
+  let raf=null,t0=0;
+  function stop(){ if(raf){cancelAnimationFrame(raf);raf=null;$("#crisp-play").textContent="Animar";} }
+  $("#crisp-play").addEventListener("click",()=>{
+    if(raf){stop();return;}
+    $("#crisp-play").textContent="Pausar"; t0=performance.now();
+    const step=now=>{ const t=((now-t0)/6000)%1; slider.value=(10+3*(0.5-0.5*Math.cos(t*2*Math.PI))).toFixed(2); draw(); raf=requestAnimationFrame(step); };
+    raf=requestAnimationFrame(step);
+  });
+  draw();
+  window.redrawCrisp=draw;
+})();
+
+/* ---------- Figura 2: pipeline ---------- */
+function drawPipe(active=-1){
+  const svg=$("#fig-pipe"); clear(svg);
+  const stages=[["Fuzzificação","valores → graus μ"],["Regras","SE…ENTÃO, força = mín"],["Agregação","união por máx"],["Defuzzificação","centroide → número"]];
+  const bw=168, gap=40, x0=(1000-(4*bw+3*gap+2*90))/2;
+  el("text",{x:x0+40,y:84,"text-anchor":"middle",style:"font-size:13px;fill:var(--ink-2);font-weight:600"},svg).textContent="entradas";
+  el("text",{x:x0+40,y:104,"text-anchor":"middle",class:"tick"},svg).textContent="3 medições";
+  const defs=el("defs",{},svg); const m=el("marker",{id:"arr",viewBox:"0 0 10 10",refX:9,refY:5,markerWidth:7,markerHeight:7,orient:"auto"},defs); el("path",{d:"M0,0L10,5L0,10z",fill:"var(--muted)"},m);
+  let x=x0+90;
+  el("line",{x1:x0+78,y1:95,x2:x-4,y2:95,stroke:"var(--muted)","stroke-width":1.5,"marker-end":"url(#arr)"},svg);
+  stages.forEach(([a,b],i)=>{
+    const on=i===active;
+    el("rect",{x,y:50,width:bw,height:90,rx:12,fill:on?"var(--accent-soft)":"var(--surface)",stroke:on?"var(--accent)":"var(--rule)","stroke-width":on?2:1},svg);
+    el("text",{x:x+bw/2,y:44,"text-anchor":"middle",style:"font-size:12px;fill:var(--accent);font-weight:600"},svg).textContent=String(i+1).padStart(2,"0");
+    el("text",{x:x+bw/2,y:90,"text-anchor":"middle",style:`font-size:15px;font-weight:600;fill:${on?"var(--accent)":"var(--ink)"}`},svg).textContent=a;
+    el("text",{x:x+bw/2,y:112,"text-anchor":"middle",class:"tick",style:"font-size:12px"},svg).textContent=b;
+    // mini ícones
+    const g=el("g",{transform:`translate(${x+bw/2-40},150)`},svg);
+    if(i===0){ el("path",{d:"M0,30L20,0L40,30M25,30L45,0L65,0L80,30",fill:"none",stroke:"var(--s1)","stroke-width":1.5},g); }
+    if(i===1){ [18,10,26].forEach((h,k)=>el("rect",{x:k*28,y:30-h,width:20,height:h,rx:2,fill:"var(--s2)",opacity:.8},g)); }
+    if(i===2){ el("path",{d:"M0,30L15,12L35,12L45,22L55,4L65,4L80,30Z",fill:"var(--s3)",opacity:.6},g); }
+    if(i===3){ el("path",{d:"M0,30L15,12L35,12L45,22L55,4L65,4L80,30Z",fill:"none",stroke:"var(--s3)","stroke-width":1.5},g); el("line",{x1:44,x2:44,y1:-2,y2:32,stroke:"var(--ink)","stroke-width":2},g); }
+    if(i<3) el("line",{x1:x+bw+4,y1:95,x2:x+bw+gap-4,y2:95,stroke:"var(--muted)","stroke-width":1.5,"marker-end":"url(#arr)"},svg);
+    x+=bw+gap;
+  });
+  x-=gap;
+  el("line",{x1:x+4,y1:95,x2:x+36,y2:95,stroke:"var(--muted)","stroke-width":1.5,"marker-end":"url(#arr)"},svg);
+  el("text",{x:x+62,y:90,"text-anchor":"middle",style:"font-size:13px;fill:var(--ink-2);font-weight:600"},svg).textContent="índice";
+  el("text",{x:x+62,y:110,"text-anchor":"middle",class:"tick"},svg).textContent="0 a 10";
+}
+drawPipe();
+
+/* ---------- Figura 3: correlações ---------- */
+(function(){
+  const data=[["alcohol", 0.479], ["sulphates", 0.377], ["citric acid", 0.213], ["fixed acidity", 0.114], ["residual sugar", 0.032], ["pH", -0.044], ["free sulfur dioxide", -0.057], ["density", -0.177], ["chlorides", -0.19], ["total sulfur dioxide", -0.197], ["volatile acidity", -0.381]];
+  const svg=$("#fig-corr"), W=640,H=330,L=170,R=50,T=10,B=30;
+  const n=data.length, bh=(H-T-B)/n, sx=v=>L+(v+0.5)/1.0*(W-L-R);
+  const chosen=new Set(["alcohol","volatile acidity","sulphates"]);
+  const PT={"alcohol":"álcool","volatile acidity":"acidez volátil","sulphates":"sulfatos","citric acid":"ácido cítrico","fixed acidity":"acidez fixa","residual sugar":"açúcar residual","pH":"pH","free sulfur dioxide":"SO₂ livre","density":"densidade","chlorides":"cloretos","total sulfur dioxide":"SO₂ total"};
+  for(const g of [-0.4,-0.2,0,0.2,0.4]){ el("line",{x1:sx(g),x2:sx(g),y1:T,y2:H-B,class:"grid",style:g===0?"stroke:var(--muted)":""},svg); el("text",{x:sx(g),y:H-B+18,"text-anchor":"middle",class:"tick"},svg).textContent=fmt(g,1); }
+  data.forEach(([k,v],i)=>{
+    const y=T+i*bh+bh*0.2, h=bh*0.6, on=chosen.has(k);
+    const x=Math.min(sx(0),sx(v)), w=Math.abs(sx(v)-sx(0));
+    const r=el("rect",{x,y,width:Math.max(w,1),height:h,rx:3,fill:on?(v>0?"var(--s1)":"var(--s2)"):"var(--padrao)",opacity:on?1:.45},svg);
+    el("text",{x:L-10,y:y+h/2+4,"text-anchor":"end",style:`font-size:12.5px;${on?"fill:var(--ink);font-weight:600":""}`},svg).textContent=PT[k]||k;
+    if(on) el("text",{x:v>0?sx(v)+6:sx(v)-6,y:y+h/2+4,"text-anchor":v>0?"start":"end",style:"font-size:12px;fill:var(--ink);font-weight:600"},svg).textContent=(v>0?"+":"")+fmt(v,2);
+    const hit=el("rect",{x:L,y:T+i*bh,width:W-L-R,height:bh,fill:"transparent"},svg);
+    hit.addEventListener("mousemove",e=>showTip(`<b>${PT[k]||k}</b><br>ρ = ${fmt(v,3)}`,e)); hit.addEventListener("mouseleave",hideTip);
+  });
+})();
+
+/* ---------- Laboratório ---------- */
+const PRESETS=[[10.2,0.875,0.52,3],[9.5,0.61,0.59,5],[10.7,0.59,0.58,6],[14.0,0.49,0.82,8]];
+const TERM_LABEL={baixo:"baixo",medio:"médio",alto:"alto",baixa:"baixa",media:"média",alta:"alta",adequado:"adequado",excessivo:"excessivo",ruim:"ruim",regular:"regular",boa:"boa",excelente:"excelente"};
+const VAR_LABEL={alcool:"álcool",acidez:"acidez",sulfatos:"sulfatos"};
+const lab={inp:{alcool:10.7,acidez:0.59,sulfatos:0.58}, note:6, stage:4, prog:1};
+let LIM={p:6.6,r:4.6};
+const decide = i => i>=LIM.p ? "Premium" : i<LIM.r ? "Revisar" : "Padrão";
+
+function drawMF(v){
+  const svg=$("#mf-"+v); clear(svg);
+  const W=320,H=150,L=8,R=8,T=12,B=26, [x0,x1]=M.vars[v].range;
+  const sx=x=>L+(x-x0)/(x1-x0)*(W-L-R), sy=y=>T+(1-y)*(H-T-B);
+  el("line",{x1:L,x2:W-R,y1:sy(0),y2:sy(0),stroke:"var(--rule)"},svg);
+  const ticks = v==="alcool"?[8,10,12,14]:v==="acidez"?[0.2,0.6,1.0,1.4]:[0.5,1.0,1.5,2.0];
+  ticks.forEach(t=>el("text",{x:sx(t),y:H-8,"text-anchor":"middle",class:"tick"},svg).textContent=fmt(t,t%1?1:0));
+  const x=lab.inp[v], showMu = lab.stage>=0;
+  Object.entries(M.vars[v].termos).forEach(([t,p],k)=>{
+    let d=""; for(let i=0;i<=100;i++){ const xx=x0+(x1-x0)*i/100; d+=(i?"L":"M")+sx(xx).toFixed(1)+","+sy(trap(xx,p)).toFixed(1); }
+    el("path",{d,fill:"none",stroke:`var(${TERM_COLOR[k]})`,"stroke-width":2},svg);
+    const peak=(p[1]+p[2])/2;
+    el("text",{x:Math.min(Math.max(sx(peak),30),W-30),y:T-1,"text-anchor":"middle",style:"font-size:11px;fill:var(--ink-2)"},svg).textContent=TERM_LABEL[t];
+    const mu=trap(x,p);
+    if(showMu && mu>0){
+      const yy=sy(mu*(lab.stage===0?lab.prog:1));
+      el("line",{x1:sx(x),x2:W-R,y1:yy,y2:yy,stroke:`var(${TERM_COLOR[k]})`,"stroke-dasharray":"2 3",opacity:.7},svg);
+      el("circle",{cx:sx(x),cy:yy,r:5,fill:`var(${TERM_COLOR[k]})`,stroke:"var(--surface)","stroke-width":2},svg);
+    }
+  });
+  el("line",{x1:sx(x),x2:sx(x),y1:T,y2:sy(0),stroke:"var(--ink)","stroke-width":1.5},svg);
+  const row=$("#mu-"+v); row.innerHTML=Object.entries(M.vars[v].termos).map(([t,p],k)=>`<span><i style="--c:var(${TERM_COLOR[k]})"></i>${TERM_LABEL[t]} <b>${showMu?fmt(trap(x,p),2):"–"}</b></span>`).join("");
+}
+function buildRules(){
+  const box=$("#rules"); box.innerHTML="";
+  M.regras.forEach(([ant,c],i)=>{
+    const ci=OUT_TERMS.indexOf(c);
+    const txt="SE "+Object.entries(ant).map(([v,t])=>`${VAR_LABEL[v]} é <b>${TERM_LABEL[t]}</b>`).join(" E ")+` ENTÃO <b>${TERM_LABEL[c]}</b>`;
+    const r=document.createElement("div"); r.className="rule"; r.innerHTML=`<span class="txt">R${i+1}. ${txt}</span><span class="bar"><i style="background:var(${TERM_COLOR[ci]})"></i></span><span class="val">0</span>`;
+    box.appendChild(r);
+  });
+}
+const lg=$("#out-legend"); OUT_TERMS.forEach((t,k)=>{ lg.insertAdjacentHTML("beforeend",`<span><i style="--c:var(${TERM_COLOR[k]})"></i>${TERM_LABEL[t]}</span>`); });
+lg.insertAdjacentHTML("beforeend",`<span><i style="--c:var(--ink);height:10px;opacity:.25"></i>área agregada</span>`);
+
+function drawOut(res){
+  const svg=$("#mf-out"); clear(svg);
+  const W=440,H=210,L=30,R=10,T=14,B=28;
+  const sx=x=>L+x/10*(W-L-R), sy=y=>T+(1-y)*(H-T-B);
+  for(const g of [0,.5,1]){ el("line",{x1:L,x2:W-R,y1:sy(g),y2:sy(g),class:"grid"},svg); el("text",{x:L-6,y:sy(g)+4,"text-anchor":"end",class:"tick"},svg).textContent=fmt(g,1); }
+  for(let t=0;t<=10;t+=2) el("text",{x:sx(t),y:H-8,"text-anchor":"middle",class:"tick"},svg).textContent=t;
+  // limiares
+  [[LIM.r,"Revisar"],[LIM.p,"Premium"]].forEach(([v,lab_])=>{ el("line",{x1:sx(v),x2:sx(v),y1:T,y2:sy(0),stroke:"var(--muted)","stroke-dasharray":"4 4"},svg); });
+  OUT_TERMS.forEach((t,k)=>{ let d=""; Y.forEach((y,i)=>{ if(i%5===0) d+=(i?"L":"M")+sx(y).toFixed(1)+","+sy(MF_OUT[t][i]).toFixed(1); }); el("path",{d,fill:"none",stroke:`var(${TERM_COLOR[k]})`,"stroke-width":1.5,opacity:.55},svg); });
+  if(lab.stage>=2){
+    const s = lab.stage===2 ? lab.prog : 1;
+    let d=`M${sx(0)},${sy(0)}`; Y.forEach((y,i)=>{ d+=`L${sx(y).toFixed(1)},${sy(res.agg[i]*s).toFixed(1)}`; }); d+=`L${sx(10)},${sy(0)}Z`;
+    el("path",{d,fill:"var(--ink)",opacity:.16,stroke:"var(--ink)","stroke-width":1.2},svg);
+  } else if(lab.stage===1){
+    // regras: cada saída cortada individualmente
+    M.regras.forEach(([,c],r)=>{ const w=res.w[r]*lab.prog; if(w<=0) return; const ci=OUT_TERMS.indexOf(c); let d=`M${sx(0)},${sy(0)}`; Y.forEach((y,i)=>{ if(i%2===0) d+=`L${sx(y).toFixed(1)},${sy(Math.min(w,MF_OUT[c][i])).toFixed(1)}`; }); d+=`L${sx(10)},${sy(0)}Z`; el("path",{d,fill:`var(${TERM_COLOR[ci]})`,opacity:.25},svg); });
+  }
+  if(lab.stage>=3){
+    const yTop = lab.stage===3 ? sy(0)-(sy(0)-T)*lab.prog : T;
+    el("line",{x1:sx(res.y),x2:sx(res.y),y1:yTop,y2:sy(0),stroke:"var(--ink)","stroke-width":2.5},svg);
+    el("polygon",{points:`${sx(res.y)-6},${sy(0)+8} ${sx(res.y)+6},${sy(0)+8} ${sx(res.y)},${sy(0)+1}`,fill:"var(--ink)"},svg);
+    el("text",{x:sx(res.y)+(res.y>7.5?-6:6),y:T+12,"text-anchor":res.y>7.5?"end":"start",style:"font-size:12px;font-weight:600;fill:var(--ink)"},svg).textContent="centroide "+fmt(res.y,2);
+  }
+}
+function renderLab(){
+  const res=inferir(lab.inp);
+  for(const v of VKEYS){ $("#in-"+v).value=lab.inp[v]; $("#out-"+v).textContent=fmt(lab.inp[v],2); drawMF(v); }
+  $$(".rule").forEach((r,i)=>{ const w = lab.stage>=1 ? res.w[i]*(lab.stage===1?lab.prog:1) : 0; r.querySelector("i").style.width=(w*100)+"%"; r.querySelector(".val").textContent=fmt(w,2); r.classList.toggle("on",w>0); });
+  drawOut(res);
+  $$(".stage").forEach((s,i)=>s.classList.toggle("active", lab.stage===i));
+  if(lab.stage>=3){ const d=decide(res.y); $("#idx").textContent=fmt(res.y,2); const ch=$("#decision"); ch.textContent=d; ch.style.setProperty("--c",decisionColor(d)); }
+  else { $("#idx").textContent="…"; $("#decision").textContent="calculando"; $("#decision").style.setProperty("--c","var(--rule)"); }
+  $("#real-note").textContent = lab.note!=null ? `nota real dos provadores: ${lab.note}` : "lote hipotético";
+  drawPipe(lab.stage<4?lab.stage:-1);
+}
+buildRules();
+for(const v of VKEYS){ $("#in-"+v).addEventListener("input",e=>{ cancelAnim(); lab.inp[v]=+e.target.value; lab.note=null; lab.stage=4; lab.prog=1; renderLab(); }); }
+$$("[data-preset]").forEach(b=>b.addEventListener("click",()=>{ const p=PRESETS[+b.dataset.preset]; lab.inp={alcool:p[0],acidez:p[1],sulfatos:p[2]}; lab.note=p[3]; runAnim(); }));
+let animRaf=null;
+function cancelAnim(){ if(animRaf){cancelAnimationFrame(animRaf); animRaf=null;} }
+function runAnim(){
+  cancelAnim();
+  if(REDUCED){ lab.stage=4; lab.prog=1; renderLab(); return; }
+  const DUR=1100, PAUSE=350, t0=performance.now();
+  const tick=now=>{
+    const t=now-t0, per=DUR+PAUSE, st=Math.floor(t/per);
+    if(st>3){ lab.stage=4; lab.prog=1; renderLab(); animRaf=null; return; }
+    lab.stage=st; lab.prog=Math.min(1,(t-st*per)/DUR); lab.prog=1-Math.pow(1-lab.prog,3);
+    renderLab(); animRaf=requestAnimationFrame(tick);
+  };
+  animRaf=requestAnimationFrame(tick);
+}
+$("#animate").addEventListener("click",runAnim);
+lab.stage=4; renderLab();
+
+/* ---------- Figura 5: strip plot ---------- */
+const DATA = M.dados; // [alcool, acidez, sulfatos, nota, indice]
+function drawStrip(){
+  const svg=$("#fig-strip"); clear(svg);
+  const W=960,H=360,L=50,R=20,T=14,B=44, notas=[3,4,5,6,7,8];
+  const bw=(W-L-R)/notas.length, sy=y=>T+(1-(y-3)/(8.5-3))*(H-T-B);
+  for(let g=3;g<=8;g++){ el("line",{x1:L,x2:W-R,y1:sy(g),y2:sy(g),class:"grid"},svg); el("text",{x:L-8,y:sy(g)+4,"text-anchor":"end",class:"tick"},svg).textContent=g; }
+  el("text",{x:14,y:T+(H-T-B)/2,transform:`rotate(-90 14 ${T+(H-T-B)/2})`,"text-anchor":"middle",class:"tick"},svg).textContent="índice fuzzy";
+  notas.forEach((n,i)=>{ const pts=DATA.filter(d=>d[3]===n); el("text",{x:L+bw*(i+.5),y:H-B+20,"text-anchor":"middle",style:"font-size:13px;fill:var(--ink);font-weight:600"},svg).textContent="nota "+n; el("text",{x:L+bw*(i+.5),y:H-B+36,"text-anchor":"middle",class:"tick"},svg).textContent=pts.length+" vinhos"; });
+  let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
+  const g=el("g",{},svg);
+  DATA.forEach(d=>{
+    const i=notas.indexOf(d[3]); const cx=L+bw*(i+.5)+(rnd()-.5)*bw*0.62; const dec=decide(d[4]);
+    const c=el("circle",{cx:cx.toFixed(1),cy:sy(d[4]).toFixed(1),r:3.2,fill:decisionColor(dec),opacity:.62},g);
+    c.addEventListener("mousemove",e=>{ c.setAttribute("r",6); showTip(`<b>Nota ${d[3]} · índice ${fmt(d[4],2)}</b><br>álcool ${fmt(d[0],1)} % · acidez ${fmt(d[1],2)} · sulfatos ${fmt(d[2],2)}<br>decisão: ${dec}`,e); });
+    c.addEventListener("mouseleave",()=>{ c.setAttribute("r",3.2); hideTip(); });
+    c.addEventListener("click",()=>{ lab.inp={alcool:d[0],acidez:d[1],sulfatos:d[2]}; lab.note=d[3]; $("#lab").scrollIntoView({behavior:REDUCED?"auto":"smooth"}); runAnim(); });
+  });
+  notas.forEach((n,i)=>{ const v=DATA.filter(d=>d[3]===n).map(d=>d[4]).sort((a,b)=>a-b); const med=v[Math.floor(v.length/2)]; const x=L+bw*(i+.5); el("line",{x1:x-bw*0.36,x2:x+bw*0.36,y1:sy(med),y2:sy(med),stroke:"var(--ink)","stroke-width":3,"stroke-linecap":"round"},svg); el("text",{x:x+bw*0.38,y:sy(med)+4,style:"font-size:11.5px;fill:var(--ink);font-weight:600"},svg).textContent=fmt(med,1); });
+  [[LIM.p,"limiar Premium"],[LIM.r,"limiar Revisar"]].forEach(([v,t])=>{ el("line",{x1:L,x2:W-R,y1:sy(v),y2:sy(v),stroke:"var(--ink-2)","stroke-dasharray":"5 4"},svg); el("text",{x:W-R,y:sy(v)-5,"text-anchor":"end",style:"font-size:11.5px;fill:var(--ink-2)"},svg).textContent=t+" "+fmt(v,1); });
+}
+drawStrip();
+
+/* ---------- Figura 6: superfícies ---------- */
+const SA=[8.5,14], SV=[0.15,1.3], GN=56;
+function crispIdx(a,v){ return (a>=11.5 && v<0.5) ? 8 : (v>=0.8 ? 3 : 5.5); }
+function drawSurface(id, fn){
+  const cv=$(id), ctx=cv.getContext("2d"), W=cv.width, H=cv.height, L=48,R=8,T=8,B=38;
+  ctx.clearRect(0,0,W,H);
+  const cw=(W-L-R)/GN, ch=(H-T-B)/GN; const grid=[];
+  for(let j=0;j<GN;j++){ const v=SV[0]+(SV[1]-SV[0])*(j+.5)/GN; for(let i=0;i<GN;i++){ const a=SA[0]+(SA[1]-SA[0])*(i+.5)/GN; const z=fn(a,v); grid.push([a,v,z]); ctx.fillStyle=seqColor((z-2.5)/(8.5-2.5)); ctx.fillRect(L+i*cw, T+(GN-1-j)*ch, cw+0.6, ch+0.6); } }
+  ctx.fillStyle=css("--muted"); ctx.font="11px "+css("--font-ui"); ctx.textAlign="center";
+  for(let t=9;t<=14;t++){ ctx.fillText(t+" %", L+(t-SA[0])/(SA[1]-SA[0])*(W-L-R), H-B+16); }
+  ctx.fillText("teor alcoólico", L+(W-L-R)/2, H-4);
+  ctx.textAlign="right"; for(const t of [0.2,0.4,0.6,0.8,1.0,1.2]){ ctx.fillText(fmt(t,1), L-6, T+(1-(t-SV[0])/(SV[1]-SV[0]))*(H-T-B)+4); }
+  ctx.save(); ctx.translate(11,T+(H-T-B)/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText("acidez volátil (g/L)",0,0); ctx.restore();
+  cv._grid={grid,L,R,T,B,W,H};
+}
+function surfHover(id){
+  const cv=$(id);
+  cv.addEventListener("mousemove",e=>{ const g=cv._grid; if(!g) return; const r=cv.getBoundingClientRect(); const px=(e.clientX-r.left)*cv.width/r.width, py=(e.clientY-r.top)*cv.height/r.height; const i=Math.floor((px-g.L)/((g.W-g.L-g.R)/GN)), j=GN-1-Math.floor((py-g.T)/((g.H-g.T-g.B)/GN)); if(i<0||j<0||i>=GN||j>=GN){hideTip();return;} const [a,v,z]=g.grid[j*GN+i]; showTip(`álcool ${fmt(a,2)} % · acidez ${fmt(v,2)}<br><b>índice ${fmt(z,2)} → ${decide(z)}</b>`,e); });
+  cv.addEventListener("mouseleave",hideTip);
+}
+function drawSurfaces(){ const s=+$("#surf-sul").value; $("#surf-sul-out").textContent=fmt(s,2)+" g/L"; drawSurface("#surf-fuzzy",(a,v)=>indiceRapido(a,v,s)); drawSurface("#surf-crisp",crispIdx); }
+surfHover("#surf-fuzzy"); surfHover("#surf-crisp");
+$("#surf-sul").addEventListener("input",drawSurfaces);
+(function(){ const box=$("#seq-legend"); box.innerHTML=[3,4,5,6,7,8].map(v=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px"><i style="width:16px;height:12px;border-radius:2px;background:${seqColor((v-2.5)/6)}"></i>${v}</span>`).join(""); })();
+drawSurfaces();
+
+/* ---------- Painel gerencial ---------- */
+function realClass(q){ return q>=7?"Premium":(q<=4?"Revisar":"Padrão"); }
+function renderPanel(){
+  LIM.p=+$("#th-p").value; LIM.r=+$("#th-r").value;
+  if(LIM.r>LIM.p){ LIM.r=LIM.p; $("#th-r").value=LIM.r; }
+  $("#th-p-out").textContent=fmt(LIM.p,1); $("#th-r-out").textContent=fmt(LIM.r,1);
+  const C=["Premium","Padrão","Revisar"]; const m={}; C.forEach(a=>{m[a]={}; C.forEach(b=>m[a][b]=0);});
+  DATA.forEach(d=>m[realClass(d[3])][decide(d[4])]++);
+  const max=Math.max(...C.flatMap(a=>C.map(b=>m[a][b])));
+  let h=`<tr><th></th>${C.map(c=>`<th>decisão: ${c}</th>`).join("")}</tr>`;
+  C.forEach(a=>{ h+=`<tr><th class="row">real: ${a}</th>`+C.map(b=>{ const v=m[a][b], t=Math.sqrt(v/max); const dark=t>0.55; return `<td style="background:${seqColor(t)};color:${dark?"#fff":"var(--ink)"};${a===b?"box-shadow:inset 0 0 0 2px var(--ink)":""}">${v}</td>`; }).join("")+"</tr>"; });
+  $("#cm").innerHTML=h;
+  const premTot=C.reduce((s,a)=>s+m[a].Premium,0), revTot=C.reduce((s,a)=>s+m[a].Revisar,0);
+  const realPrem=C.reduce((s,b)=>s+m.Premium[b],0), realRuim=C.reduce((s,b)=>s+m.Revisar[b],0);
+  $("#k-prem").textContent=premTot; $("#k-prec").textContent=premTot?fmt(100*m.Premium.Premium/premTot,0)+" %":"–";
+  $("#k-rec").textContent=fmt(100*m.Premium.Premium/realPrem,0)+" %"; $("#k-rev").textContent=revTot;
+  const escaped=m.Revisar.Premium+m.Revisar["Padrão"];
+  $("#cm-note").innerHTML=`Dos ${realRuim} vinhos fracos (nota ≤ 4), <b>${realRuim-escaped}</b> foram parar na prova sensorial e <b>${escaped}</b> seguiram direto para engarrafamento. ${m.Revisar.Premium>0?`<b>${m.Revisar.Premium}</b> deles receberam o rótulo Premium.`:"Nenhum recebeu o rótulo Premium."}`;
+  drawStrip(); renderLab(); drawSurfaces();
+}
+$("#th-p").addEventListener("input",renderPanel); $("#th-r").addEventListener("input",renderPanel);
+$$("[data-pol]").forEach(b=>b.addEventListener("click",()=>{ const [p,r]=b.dataset.pol.split(","); $("#th-p").value=p; $("#th-r").value=r; renderPanel(); }));
+renderPanel();
+
+/* ---------- código: realce simples e copiar ---------- */
+$$("code.py").forEach(c=>{
+  const raw=c.textContent; c.dataset.raw=raw;
+  let s=raw.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  s=s.replace(/(#[^\n]*)|("[^"\n]*")|\b(import|from|as|def|return|if|for|in|zip|print)\b|\b(\d+\.?\d*)\b/g,(m,c1,s1,k,n)=> c1?`<span class="tok-c">${c1}</span>`: s1?`<span class="tok-s">${s1}</span>`: k?`<span class="tok-k">${k}</span>`:`<span class="tok-n">${n}</span>`);
+  c.innerHTML=s;
+});
+$$(".code .copy").forEach(b=>b.addEventListener("click",async()=>{ const raw=b.parentElement.querySelector("code").dataset.raw; try{ await navigator.clipboard.writeText(raw); b.textContent="Copiado"; }catch(e){ b.textContent="Selecione e copie"; } setTimeout(()=>b.textContent="Copiar",1600); }));
+
+/* ---------- validação do motor JS contra o Python ---------- */
+console.table(M.check.map(([a,v,s,py])=>({alcool:a,acidez:v,sulfatos:s,python:py,js:+indiceRapido(a,v,s).toFixed(4)})));
+
+
+
+</script>
+</body>
+</html>
